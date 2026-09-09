@@ -1,1 +1,0 @@
-add_executable(cr_app main.cpp)

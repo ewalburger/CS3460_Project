@@ -1,11 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
+
+project(CS3460_Project)
  
-# Project settings
-project(
-        cr_cpp_cmake_vscode
-        VERSION 1.0.0
-        DESCRIPTION ""
-        LANGUAGES CXX C
-)
- 
-add_subdirectory(src)
+add_executable(CS3460_Project src/main.cpp)

@@ -10,8 +10,9 @@ We have selected option 2, Live Network Flow Monitor, for our project.
 	- A02360714
 	- a02360714@aggies.usu.edu
 
-- Gannon 
-	- gannon info here
+- Gannon O'Leary
+	- A02417113
+	- a02417113@aggies.usu.edu
 
 ## Build Instructions
 

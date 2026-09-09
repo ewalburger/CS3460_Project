@@ -6,8 +6,8 @@ We have selected option 2 for our project.
 	- A02380810
 	- a02380810@usu.edu
 
-- Emberlie 
-	- emberlie info here
+- Emberly 
+	- emberly info here
 
 - Gannon 
 	- gannon info here

@@ -8,4 +8,4 @@ project(
         LANGUAGES CXX C
 )
  
-add_subdirectory(app)
+add_subdirectory(src)

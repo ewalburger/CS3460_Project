@@ -1,0 +1,1 @@
+auto parse_headers(const std::uint8_t* bytes, std::size_t caplen);

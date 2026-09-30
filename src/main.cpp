@@ -1,6 +1,6 @@
 #include <iostream>
 #include <pcap/pcap.h>
-#include "pcap_capture.cpp"
+#include "pcap_capture.hpp"
  
 int main()
 {
@@ -11,8 +11,17 @@ int main()
             std::cerr << "No network interfaces found." << std::endl;
             return 1;
         }
-        // user to choose an interface
+        // user needs to choose an interface
+        size_t choice = 0;
+        std::cout << "\nEnter the number of the interface you want to use: ";
+        std::cin >> choice;
+
         // call open_pcap_handle with the chosen interface
+        if (choice < 1 || choice > interfaces.size()) {
+            std::cerr << "Invalid choice." << std::endl;
+            return 1;
+        }
+        auto pcap_handle = open_pcap_handle(interfaces[choice - 1]);
 
     }
     catch (const std::exception& e) {
@@ -20,7 +29,5 @@ int main()
         return 1;
     }
 
-
-    std::cout << "Hello, world!" << std::endl;
     return 0;
 }

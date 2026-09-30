@@ -22,7 +22,7 @@ int main()
             return 1;
         }
         auto pcap_handle = open_pcap_handle(interfaces[choice - 1]);
-
+        std::cout << "Opened interface: " << interfaces[choice - 1] << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

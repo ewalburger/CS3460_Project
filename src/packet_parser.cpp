@@ -17,5 +17,18 @@ auto parse_headers(const std::uint8_t* bytes, std::size_t caplen) {
         return std::nullopt;
     }
     const std::size_t transport = eth + ip_len;
+
+	const std::string source = std::to_string(bytes[eth + 12]) + "." +
+		std::to_string(bytes[eth + 13]) + "." +
+		std::to_string(bytes[eth + 14]) + "." +
+		std::to_string(bytes[eth + 15]);
+
+	const std::string destination = std::to_string(bytes[eth + 16]) + "." +
+        std::to_string(bytes[eth + 17]) + "." +
+		std::to_string(bytes[eth + 18]) + "." +
+		std::to_string(bytes[eth + 19]);
+
+	std::cout << "Source IP: " << source << ", Destination IP: " << destination << std::endl;
+
     return std::optional<std::size_t>(transport);
 }

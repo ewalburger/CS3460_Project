@@ -47,3 +47,31 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 
     return handle; // ?
 }
+
+
+ void capture_loop(PcapHandle& handle, int packet_count) {
+     // capture packets and process them
+     if (pcap_loop(handle.get(), packet_count, [](u_char* user, const struct pcap_pkthdr* header, const u_char* bytes) {
+         std::cout << "Captured a packet with length: " << header->len << std::endl;
+         // print header for debugging
+            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec << " ts_usec=" << header->ts.tv_usec << " caplen=" << header->caplen << " len=" << header->len << std::endl;
+     }, nullptr) < 0) {
+         throw std::runtime_error(std::string("pcap_loop failed: ") + pcap_geterr(handle.get()));
+     }
+ }
+
+
+/*
+cap_pkthdr* header = nullptr;
+const u_char* bytes = nullptr;
+int rc = pcap_next_ex(handle.get(), &header, &bytes);
+CS 3460 Modern C++ | Project 2: Live Network Flow Monitor
+if (rc == 1) {
+auto packet = parser.parse(bytes, header->caplen, header->len);
+} else if (rc == 0) {
+// timeout; continue
+} else if (rc == -1) {
+// capture error
+
+
+*/

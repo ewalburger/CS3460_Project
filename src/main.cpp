@@ -1,6 +1,8 @@
 #include <iostream>
 #include <pcap/pcap.h>
 #include "pcap_capture.hpp"
+
+
  
 int main()
 {
@@ -22,6 +24,7 @@ int main()
             return 1;
         }
         auto pcap_handle = open_pcap_handle(interfaces[choice - 1]);
+        capture_loop(pcap_handle, 10); // Capture 10 packets
         std::cout << "Opened interface: " << interfaces[choice - 1] << std::endl;
     }
     catch (const std::exception& e) {

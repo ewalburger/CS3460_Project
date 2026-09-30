@@ -39,6 +39,52 @@ After looking at this starter code..
 - check the right offset >= 0 and right offset+datalength <= buffersize. If either condition fails program throws an error.
 - starter code is the building block for this step
 
+Here is some pseudocode for how the loop should look
+
+```
+
+FUNCTION run_capture_loop(pcap_handle, parser, flow_table):
+
+    WHILE running_flag IS true:
+
+        header, bytes, rc = pcap_next_ex(pcap_handle)
+
+        IF rc == 1:                     # packet successfully captured
+            # bytes/header are ONLY valid until the next pcap_next_ex call
+            # -> must fully parse and copy out needed data right now
+
+            packet = parser.parse(bytes, header.caplen, header.len)
+            #   - use caplen for every bounds check inside parse()
+            #   - use len only as metadata (e.g. detect truncation)
+            #   - parse() returns an OWNED struct/object, no pointers
+            #     back into bytes
+
+            IF packet IS valid:
+                flow_table.update(packet)
+            ELSE:
+                increment malformed_packet_count   # optional stat
+
+        ELSE IF rc == 0:                # timeout, no packet available
+            CONTINUE                    # just loop again
+
+        ELSE IF rc == -1:               # capture error
+            log_error(pcap_geterr(pcap_handle))
+            BREAK                       # stop capturing
+
+        ELSE IF rc == -2:               # end of offline capture file
+            BREAK                       # no more packets will come
+
+        # --- periodic housekeeping (not tied to packet arrival) ---
+        IF time_since_last_sweep >= sweep_interval:
+            flow_table.expire_idle_flows(timeout_threshold)
+            flow_table.report()         # print/export current state
+            reset sweep_timer
+
+    END WHILE
+
+    flow_table.report()                 # final flush on exit
+```
+
 ## Step 3: Locate Ehternet, IPv4, and TCP/UDP
 - parse the header (?)
 - ensure everything is present 

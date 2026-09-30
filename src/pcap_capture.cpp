@@ -49,17 +49,50 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 }
 
 
- void capture_loop(PcapHandle& handle, int packet_count) {
-     // capture packets and process them
-     if (pcap_loop(handle.get(), packet_count, [](u_char* user, const struct pcap_pkthdr* header, const u_char* bytes) {
-         std::cout << "Captured a packet with length: " << header->len << std::endl;
-         // print header for debugging
-            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec << " ts_usec=" << header->ts.tv_usec << " caplen=" << header->caplen << " len=" << header->len << std::endl;
-     }, nullptr) < 0) {
-         throw std::runtime_error(std::string("pcap_loop failed: ") + pcap_geterr(handle.get()));
-     }
- }
+void capture_loop(PcapHandle& handle, int packet_count) {
+    int packets_processed = 0;
 
+    while (packet_count <= 0 || packets_processed < packet_count) {
+        struct pcap_pkthdr* header = nullptr;
+        const u_char* bytes = nullptr;
+
+        int rc = pcap_next_ex(handle.get(), &header, &bytes);
+
+        if (rc == 1) {
+            // call parser
+
+            // caplen = number of bytes actually captured into the buffer.
+            // This is the ONLY value safe to use for bounds/indexing into `bytes`.
+            std::size_t capturedLen = header->caplen;
+
+            // len = original length of the packet on the wire. May be LARGER
+            // than caplen if the packet was truncated (e.g. by snaplen).
+            // Safe to print/log, but never use it to index into `bytes`.
+            std::size_t wireLen = header->len;
+
+            std::cout << "Captured a packet with length: " << wireLen << std::endl;
+            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec
+                       << " ts_usec=" << header->ts.tv_usec
+                       << " caplen=" << capturedLen
+                       << " len=" << wireLen << std::endl;
+
+            // NOTE: `bytes` is only valid until the next call to pcap_next_ex.
+            // libpcap owns and may reuse/overwrite this buffer afterward, so
+            // nothing here should store `bytes` itself -- once parsing is
+            // added, it must happen synchronously here, copying out whatever
+            // data needs to be kept.
+
+            ++packets_processed;
+        } else if (rc == 0) {
+            // timeout; continue
+            continue;
+        } else if (rc == -1) {
+            // capture error
+            throw std::runtime_error(std::string("pcap_next_ex failed: ") + pcap_geterr(handle.get()));
+        }
+        
+    }
+}
 
 /*
 cap_pkthdr* header = nullptr;

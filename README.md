@@ -17,6 +17,7 @@ We have selected option 2, Live Network Flow Monitor, for our project.
 ## Build Instructions
 
 You can choose to use the build script or the manual build instructions.
+
 ### Install Dependencies
 
 `sudo apt-get install -y build-essential cmake pkg-config libpcap-dev`
@@ -33,4 +34,5 @@ You can choose to use the build script or the manual build instructions.
 - run `cmake --build build` while in the main directory to build the project
 
 ## Run Instructions
-run this command in the main directory `./build/flow_monitor` and it should print `hello world!`
+
+run this command in the main directory `./build/flow_monitor` and it should print interface options

@@ -13,7 +13,7 @@ int main()
         }
         // user needs to choose an interface
         size_t choice = 0;
-        std::cout << "\nEnter the number of the interface you want to use: ";
+        std::cout << "\nEnter the interface number you want to use: ";
         std::cin >> choice;
 
         // call open_pcap_handle with the chosen interface

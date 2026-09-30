@@ -35,4 +35,6 @@ You can choose to use the build script or the manual build instructions.
 
 ## Run Instructions
 
-run this command in the main directory `./build/flow_monitor` and it should print interface options
+run this command in the main directory `sudo ./build/flow_monitor` and it should print interface options
+
+- sudo is important in this command because capturing network packets using libpcap requires root or administrator privileges

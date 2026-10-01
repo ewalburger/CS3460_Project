@@ -70,7 +70,10 @@ void capture_loop(PcapHandle& handle, int packet_count) {
             // Safe to print/log, but never use it to index into `bytes`.
             std::size_t wireLen = header->len;
 
+			parse_headers(bytes, capturedLen);
+
             std::cout << "Captured a packet with length: " << wireLen << std::endl;
+            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec
             std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec
                        << " ts_usec=" << header->ts.tv_usec
                        << " caplen=" << capturedLen

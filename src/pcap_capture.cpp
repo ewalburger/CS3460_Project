@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include "pcap_capture.hpp"
+#include "packet_parser.hpp"
 
 std::vector<std::string> get_and_display_interfaces() {
     // use pcap_findalldevs() to list all available network interfaces
@@ -73,7 +74,7 @@ void capture_loop(PcapHandle& handle, int packet_count) {
 			parse_headers(bytes, capturedLen);
 
             std::cout << "Captured a packet with length: " << wireLen << std::endl;
-            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec
+            std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec;
             std::cout << "Packet Header: ts_sec=" << header->ts.tv_sec
                        << " ts_usec=" << header->ts.tv_usec
                        << " caplen=" << capturedLen

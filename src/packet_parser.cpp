@@ -2,6 +2,7 @@
 #include <pcap/pcap.h>
 #include <optional>
 #include "packet_parser.hpp"
+#include "packet_info.hpp"
 #include <cstdint>
 
 std::optional<std::size_t> parse_headers(const std::uint8_t* bytes, std::size_t caplen) {

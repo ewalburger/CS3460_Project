@@ -1,11 +1,11 @@
-#include<optional>
+#pragma once
+
+#include <optional>
 #include <cstddef>
 #include <cstdint>
+#include "packet_info.hpp"
 
-struct FlowInfo {
-    std::size_t transport_offset;
-    std::uint16_t src_port;
-    std::uint16_t dst_port;
-    bool is_tcp; // true if TCP, false if UDP
-};
-std::optional<FlowInfo> parse_headers(const std::uint8_t* bytes, std::size_t caplen);
+std::optional<PacketInfo> parse_headers(
+    const std::uint8_t* bytes,
+    std::size_t caplen,
+    std::uint32_t wire_bytes);

@@ -16,7 +16,7 @@ std::string Reporter::summarize(const PacketInfo& packet) const {
         << packet.source_ip << ":" << packet.source_port
         << " -> "
         << packet.destination_ip << ":" << packet.destination_port
-        << " (" << packet.wire_bytes << " bytes)";
+        << " " << packet.wire_bytes << " B";
     return oss.str();
 }
 

@@ -26,64 +26,18 @@ After looking at this starter code..
 - need to modify starter code to accept ethernet, ip4v, TCP, and UDP (located at `pcap_datalink(...) != DLT_EN10MB`)
 
 ### What we have done for step 1
-- starter code was missing import statements, so we added those
-- we already linked the headers in step 0 in the CMake file we edited.
 - simple error handling - decided to throw exception in case of error
+- we have finished step 1 for now. May need to revisit
 
-
-#### Questions about this step
-- are we allowed to use `auto` return type or should we specify return type?
 
 ## Step 2: Read packets with pcap_next_ex()
 - buffer bounds check: verifies if data being read in stays in the allocated size, prevents writing beyond buffer boundaries
 - check the right offset >= 0 and right offset+datalength <= buffersize. If either condition fails program throws an error.
 - starter code is the building block for this step
 
-Here is some pseudocode for how the loop should look
-
-```
-
-FUNCTION run_capture_loop(pcap_handle, parser, flow_table):
-
-    WHILE running_flag IS true:
-
-        header, bytes, rc = pcap_next_ex(pcap_handle)
-
-        IF rc == 1:                     # packet successfully captured
-            # bytes/header are ONLY valid until the next pcap_next_ex call
-            # -> must fully parse and copy out needed data right now
-
-            packet = parser.parse(bytes, header.caplen, header.len)
-            #   - use caplen for every bounds check inside parse()
-            #   - use len only as metadata (e.g. detect truncation)
-            #   - parse() returns an OWNED struct/object, no pointers
-            #     back into bytes
-
-            IF packet IS valid:
-                flow_table.update(packet)
-            ELSE:
-                increment malformed_packet_count   # optional stat
-
-        ELSE IF rc == 0:                # timeout, no packet available
-            CONTINUE                    # just loop again
-
-        ELSE IF rc == -1:               # capture error
-            log_error(pcap_geterr(pcap_handle))
-            BREAK                       # stop capturing
-
-        ELSE IF rc == -2:               # end of offline capture file
-            BREAK                       # no more packets will come
-
-        # --- periodic housekeeping (not tied to packet arrival) ---
-        IF time_since_last_sweep >= sweep_interval:
-            flow_table.expire_idle_flows(timeout_threshold)
-            flow_table.report()         # print/export current state
-            reset sweep_timer
-
-    END WHILE
-
-    flow_table.report()                 # final flush on exit
-```
+### What we have done for step 2
+- finished implementing step 2
+- left comment where parsing function will go, which will be implemented in step 3.
 
 ## Step 3: Locate Ehternet, IPv4, and TCP/UDP
 - parse the header (?)
@@ -92,8 +46,13 @@ FUNCTION run_capture_loop(pcap_handle, parser, flow_table):
 - piece together fragments 
 - fragment offset: specifies starting position of fragment, important for reassembling fragment packets. (sometimes they come in out of order)
 
+
 ## Step 4: PacketInfo and Output
 - summarize all the headers in one line
+
+### What we have done so far
+- added files `reporter.hpp`, `packet_info.hpp`, and `reporter.cpp`
+- need to update main to include these headers
 
 ## Requirements / Evaluation Criteria
 1. running with a valid interface starts live capture and clearly prints the selected interface

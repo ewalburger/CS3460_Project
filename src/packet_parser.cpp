@@ -58,5 +58,5 @@ std::optional<FlowInfo> parse_headers(const std::uint8_t* bytes, std::size_t cap
     std::uint16_t src_port = (static_cast<std::uint16_t>(transport_header[0]) << 8) | transport_header[1];
     std::uint16_t dst_port = (static_cast<std::uint16_t>(transport_header[2]) << 8) | transport_header[3];
 
-    return FlowInfo{transport_offset, src_port, dst_port, is_tcp};
+    return std::optional<FlowInfo>{FlowInfo{transport_offset, src_port, dst_port, is_tcp}};
 }

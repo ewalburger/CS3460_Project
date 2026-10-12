@@ -8,4 +8,5 @@ struct FlowInfo {
     std::uint16_t dst_port;
     bool is_tcp; // true if TCP, false if UDP
 };
+
 std::optional<FlowInfo> parse_headers(const std::uint8_t* bytes, std::size_t caplen);

@@ -28,6 +28,9 @@ Shared data
 - Capturer and updater will share a locked queue
 - Updater and reporter will share a locked table
 
+Diagram for Threading provided in class
+![Alt text](images/multithreading_diagram.png)
+
 #### Psuedocode for step 3
 ```
 // ---- Shared state ----
@@ -108,7 +111,7 @@ Evaluation criteria 4
 - make separate threads for caputure and report 
 - lock/unlock - make sure processes don't read and write at the same time
 
-## Divide and Conquer 
+### Divide and Conquer
 - Multithreading : Jayne
 	- split up the capture and updater, diagrma on canvas - use page 26 of concurrency 1 on lecture slides
 	- the diagram on page 25 is NOT correct
@@ -117,7 +120,51 @@ Evaluation criteria 4
 - Part 2 : Gannon 
 	- try to make sense of what the instructions are actually telling us to do
 
-- next meeting (10/14): research our topic, have pseudocode, attempt to implement it before meeting
+**next meeting (10/14): research our topic, have pseudocode, attempt to implement it before meeting**
 
 ## Meeting On 10/14
-So far: done minimal research. Still need to begin implementation
+So far: done minimal research. Beginning implementation today
+
+Implementing Step 1
+- step 2 and step 1 are very intertwined, some parts overlap
+- flow key was given to us in the starter code
+- need to add number of bytes to the flow key
+
+- `pcap_capture` and `packet_parser` will not be touched in part 1 or 2
+
+- updater and capturer need to be in different files -> made new files `updater.cpp` and `updater.hpp`
+- packetparser sends `packetinfo` into the updater, which the updater splits them into `flowkey` and `flowstats` 
+
+Flow aggregator -?
+- flowtable needs to be accesed by all threads
+    - flowaggregator should be in a separate file, so we need new files `flow_aggregator.cpp` and `flow_aggregator.hpp`
+    - instantiate `flow_aggregator` class in main
+    - pass references to the `flowaggregator` in other functions
+    - `flowaggregator` will hold `flowtable` and functionality for updating and reporting aka `addingpackets` function and method for getting active flows, which will be used by the reporter
+    - **locks** are important -- will be implemented in step3
+
+Flow aggregator
+- does everything so get rid of flow updater
+- make flow key and flow stats during the update method, which will be its own thread
+- during update it needs to add the packet to the flowtable
+- making the flow table in the flow aggregator?
+
+Conclusion: step 1 and step 2 are going to be done at the same time
+- make the updater
+- reporter needs current flow table, snapshot is making a copy of what the flow table is at the moment
+
+main doesnt have a header file because it is the entry point
+- only need headers when you are calling something
+
+
+### Next meeting 10/20
+try to have step 1 and 2 done by tuesday
+- a lot of the flow aggregator class is done
+
+#### Divide and Conquer
+Emberly: look at the update function, try to integrate update into main
+Ganon: look at the snapshot function, try to integrate into main
+
+Jayne: keep researching about multithreading. make some threads that work. 
+- thread that calls updater function and thread that calls reporter function
+- look into making a locked queue

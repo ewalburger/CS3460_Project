@@ -12,8 +12,24 @@ Evaluation criteria 4
 - then make a flow table
 
 Step 1
-- choose a flow table
-- create a flow table and update it?
+- persist means in-memory persistence during the lifetime of our app running. It doesn't mean a database.
+- as packets arrive, the packet monitor aggregates them into stats stored inside a collection such as  std::map
+- goal is to group individual packets into "flows" to track statistics instead of printing raw packet-by-packet data
+- The directional five-tuple (flowkey)
+	- five-tuple: standard set of 5 values that uniquely identify a network conversation
+	- directional-five-tuple, so direction matters
+	- we are provided the exact blueprint for the FlowKey scruct.
+		- they key is just the identifier (address/port combo). the counters and timestamps are the stats that go to the keys.
+- we will choose std::map<Flowkey, FlowStats> as our flow table
+	- must use the operator< function with this std::map. The operator allows us to compare FlowKey objects, which usually aren't comparable because FlowKey is a custom struct
+- overall things to do for step 1:
+	1. Copy the FlowKey struct into our code
+	2. Put the provided comparison operator "operator<" outside of the struct right below it
+	3. create a map container: `std::map<FlowKey, FlowStats> flow_table;`
+	4. update the flow_table each time a new packet comes in
+		1. upon packet arrival extract its five-tuple to build a FlowKey
+		2. See if the FlowKey already exists
+		3. If it doesn't already exist, create it. If I t does exist, update its corresponding FlowStats with packet counts, byte countes, ect.
 
 Step 2
 - updating the record

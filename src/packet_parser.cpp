@@ -49,7 +49,7 @@ std::optional<PacketInfo> parse_headers(
         return std::nullopt;
     }
 
-    // 5. Extract Source and Destination Ports
+    // Extract Source and Destination Ports
     const std::uint8_t* transport_header = bytes + transport_offset;
     std::uint16_t src_port = (static_cast<std::uint16_t>(transport_header[0]) << 8) | transport_header[1];
     std::uint16_t dst_port = (static_cast<std::uint16_t>(transport_header[2]) << 8) | transport_header[3];
@@ -61,6 +61,14 @@ std::optional<PacketInfo> parse_headers(
         return std::nullopt;
     }
 
+    return FlowKey{
+        is_tcp ? TransportProtocol::TCP : TransportProtocol::UDP,
+        source_ip,
+        src_port,
+        destination_ip,
+        dst_port
+    };
+    
     return PacketInfo{
         source_ip,
         destination_ip,

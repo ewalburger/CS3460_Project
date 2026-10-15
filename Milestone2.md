@@ -29,7 +29,7 @@ Step 1
 	4. update the flow_table each time a new packet comes in
 		1. upon packet arrival extract its five-tuple to build a FlowKey
 		2. See if the FlowKey already exists
-		3. If it doesn't already exist, create it. If I t does exist, update its corresponding FlowStats with packet counts, byte countes, ect.
+		3. If it doesn't already exist, create it. If It does exist, update its corresponding FlowStats with packet counts, byte countes, ect.
 
 Step 2
 - updating the record

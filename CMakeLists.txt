@@ -5,6 +5,7 @@ add_executable(flow_monitor
     src/pcap_capture.cpp
     src/packet_parser.cpp
     src/reporter.cpp
+    src/packet_updater.cpp
 )
 target_compile_features(flow_monitor PRIVATE cxx_std_20)
 target_link_libraries(flow_monitor PRIVATE PkgConfig::PCAP)

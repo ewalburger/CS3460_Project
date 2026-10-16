@@ -103,7 +103,7 @@ function main():
 
 # Meeting Notes
 
-## Meeting on 10/7
+## Meeting on 10/7 time 3:00-4:00
 Evaluation criteria 4
 - sort by packets and sort by bytes?
 - use concurrency to continuously get packets without disrupting other processes 
@@ -122,7 +122,7 @@ Evaluation criteria 4
 
 **next meeting (10/14): research our topic, have pseudocode, attempt to implement it before meeting**
 
-## Meeting On 10/14
+## Meeting On 10/14 time 3:00-5:00
 So far: done minimal research. Beginning implementation today
 
 Implementing Step 1
@@ -156,14 +156,26 @@ Conclusion: step 1 and step 2 are going to be done at the same time
 main doesnt have a header file because it is the entry point
 - only need headers when you are calling something
 
+## Meeting 10/15 time 5:00-6:30
+Accomplishments
+- **finished step 1 !! ** (to our knowledge)
+- **finished step 2 !! ** (to our knowledge)
+- Starting step 3.... 
+	- for each loop for each item in flow snapshot, print each item in flow
+	- updating the reporter function	
 
-### Next meeting 10/20
+So for step 3 
+- one thread updating one thread snapshotting
+- occasionally print snapshots according to clock selected.
+
+Notes
+- instead of capturing 10 packets, make it run for like 15 seconds?
+- need to implement multi threading 
+- got a warning about storage not being persistent,, look at this next meeting
+
+### For Next meeting 10/20
 try to have step 1 and 2 done by tuesday
 - a lot of the flow aggregator class is done
-
-#### Divide and Conquer
-Emberly: look at the update function, try to integrate update into main
-Ganon: look at the snapshot function, try to integrate into main
 
 Jayne: keep researching about multithreading. make some threads that work. 
 - thread that calls updater function and thread that calls reporter function

@@ -2,6 +2,7 @@
 #include <pcap/pcap.h>
 #include "pcap_capture.hpp"
 #include "reporter.hpp"
+#include "flow_aggregator.hpp"
 
 
  
@@ -29,11 +30,24 @@ int main()
 
         std::cout << "Opened interface: " << interfaces[choice - 1] << std::endl;
         Reporter reporter;
+        FlowAggregator aggregator;
         for (const PacketInfo& packet : packets) {
-            reporter.report(packet);
+            std::cout << "hi, this is printing" << std::endl;
+            aggregator.update(packet);
+            //reporter.report(packet);
         }
 
-        
+        const auto snapshot = aggregator.snapshot();
+        std::cout << "\nFlow Summary:\n";
+        for (const FlowRow& row : snapshot) {
+            std::cout << row.key.source_ip << ":" << row.key.source_port
+                      << " -> "
+                      << row.key.destination_ip << ":" << row.key.destination_port
+                      << " Protocol: " << Reporter::protocolToString(row.key.protocol)
+                      << " Packets: " << row.stats.packet_count
+                      << " Bytes: " << row.stats.byte_count
+                      << std::endl;
+        }
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

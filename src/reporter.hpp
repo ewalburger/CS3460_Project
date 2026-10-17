@@ -7,7 +7,5 @@ public:
     void report(const PacketInfo& packet) const;
 
     std::string summarize(const PacketInfo& packet) const;
-
-private:
     static std::string protocolToString(TransportProtocol protocol);
 };

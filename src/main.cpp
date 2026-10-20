@@ -3,7 +3,8 @@
 #include "pcap_capture.hpp"
 #include "reporter.hpp"
 #include "flow_aggregator.hpp"
-
+#include <exception>
+#include <thread>
 
  
 int main()
@@ -26,15 +27,32 @@ int main()
             return 1;
         }
         auto pcap_handle = open_pcap_handle(interfaces[choice - 1]);
-        const auto packets = capture_loop(pcap_handle, 10); // Capture 10 packets
 
         std::cout << "Opened interface: " << interfaces[choice - 1] << std::endl;
-        Reporter reporter;
         FlowAggregator aggregator;
-        for (const PacketInfo& packet : packets) {
-            std::cout << "hi, this is printing" << std::endl;
-            aggregator.update(packet);
-            //reporter.report(packet);
+        PacketQueue packets;
+        std::exception_ptr capture_error;
+
+        std::thread capture_thread([&] {
+            try {
+                capture_loop(pcap_handle, 10, packets); // Capture 10 packets
+            } catch (...) {
+                capture_error = std::current_exception();
+            }
+            packets.close();
+        });
+
+        std::thread update_thread([&] {
+            while (const auto packet = packets.pop()) {
+                aggregator.update(*packet);
+            }
+        });
+
+        capture_thread.join();
+        update_thread.join();
+
+        if (capture_error) {
+            std::rethrow_exception(capture_error);
         }
 
         const auto snapshot = aggregator.snapshot();

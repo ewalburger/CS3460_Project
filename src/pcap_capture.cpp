@@ -2,7 +2,6 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
-#include <vector>
 #include <iostream>
 #include "pcap_capture.hpp"
 #include <optional>
@@ -51,9 +50,8 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 }
 
 
-std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
+void capture_loop(PcapHandle& handle, int packet_count, PacketQueue& packets) {
     int packets_processed = 0;
-    std::vector<PacketInfo> packets;
 
     while (packet_count <= 0 || packets_processed < packet_count) {
         struct pcap_pkthdr* header = nullptr;
@@ -71,7 +69,7 @@ std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
             std::optional<PacketInfo> packet = parse_headers(bytes, capturedLen, wireLen);
 
             if (packet.has_value()) {
-                packets.push_back(*packet);
+                packets.push(std::move(*packet));
                 ++packets_processed;
             }
 
@@ -86,7 +84,4 @@ std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
         }
         
     }
-
-    return packets;
 }
-

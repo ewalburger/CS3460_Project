@@ -72,10 +72,11 @@ std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
 
             if (packet.has_value()) {
                 packets.push_back(*packet);
+                ++packets_processed;
             }
 
 
-            ++packets_processed;
+  
         } else if (rc == 0) {
             // timeout; continue
             continue;

@@ -17,18 +17,28 @@ int main()
             return 1;
         }
         // user needs to choose an interface
-        size_t choice = 0;
+        size_t interface_choice = 0;
         std::cout << "\nEnter the interface number you want to use: ";
-        std::cin >> choice;
+        std::cin >> interface_choice;
 
         // call open_pcap_handle with the chosen interface
-        if (choice < 1 || choice > interfaces.size()) {
+        if (interface_choice < 1 || interface_choice > interfaces.size()) {
             std::cerr << "Invalid choice." << std::endl;
             return 1;
         }
-        auto pcap_handle = open_pcap_handle(interfaces[choice - 1]);
 
-        std::cout << "Opened interface: " << interfaces[choice - 1] << std::endl;
+        size_t time_choice = 0;
+        std::cout << "\n Enter time interval (1-2 seconds): ";
+        std::cin >> time_choice;
+
+        if (time_choice < 1 || time_choice > 2) {
+            std::cerr << "Invalid time interval." << std::endl;
+            return 1;
+        }
+
+        auto pcap_handle = open_pcap_handle(interfaces[interface_choice - 1]);
+
+        std::cout << "Opened interface: " << interfaces[interface_choice - 1] << std::endl;
         FlowAggregator aggregator;
         PacketQueue packets;
         std::exception_ptr capture_error;

@@ -6,8 +6,6 @@
 #include <exception>
 #include <thread>
 #include <chrono>
-using Clock = std::chrono::steady_clock;
-
 
  
 int main()
@@ -31,11 +29,11 @@ int main()
         }
 
         size_t time_choice = 0;
-        std::cout << "\n Enter time interval (1-2 seconds): ";
+        std::cout << "\nEnter report interval (1 or 2 seconds): ";
         std::cin >> time_choice;
 
         if (time_choice < 1 || time_choice > 2) {
-            std::cerr << "Invalid time interval." << std::endl;
+            std::cerr << "Report interval must be 1 or 2 seconds." << std::endl;
             return 1;
         }
 
@@ -45,13 +43,30 @@ int main()
         PacketQueue packets;
         std::exception_ptr capture_error;
 
-        // M2 step 3: create persistent state before loop
         FlowAggregator aggregator;
-        Clock::time_point last_report = Clock::now();
+        const auto report_interval = std::chrono::seconds(time_choice);
+        const auto report_flow_table = [&] {
+            const auto snapshot = aggregator.snapshot();
+            std::cout << "\nFlow Summary:\n";
+            for (const FlowRow& row : snapshot) {
+                std::cout << row.key.source_ip << ":" << row.key.source_port
+                          << " -> "
+                          << row.key.destination_ip << ":" << row.key.destination_port
+                          << " Protocol: " << Reporter::protocolToString(row.key.protocol)
+                          << " Packets: " << row.stats.packet_count
+                          << " Bytes: " << row.stats.byte_count
+                          << std::endl;
+            }
+        };
 
-        std::thread capture_thread(aggregator, last_report, pcap_handle, 10, packets, [&] {
+        std::thread capture_thread([&] {
             try {
-                capture_loop(aggregator, last_report, pcap_handle, 10, packets); // Capture 10 packets
+                capture_loop(
+                    pcap_handle,
+                    10,
+                    packets,
+                    report_interval,
+                    report_flow_table);
             } catch (...) {
                 capture_error = std::current_exception();
             }
@@ -72,17 +87,7 @@ int main()
             std::rethrow_exception(capture_error);
         }
 
-        const auto snapshot = aggregator.snapshot();
-        std::cout << "\nFlow Summary:\n";
-        for (const FlowRow& row : snapshot) {
-            std::cout << row.key.source_ip << ":" << row.key.source_port
-                      << " -> "
-                      << row.key.destination_ip << ":" << row.key.destination_port
-                      << " Protocol: " << Reporter::protocolToString(row.key.protocol)
-                      << " Packets: " << row.stats.packet_count
-                      << " Bytes: " << row.stats.byte_count
-                      << std::endl;
-        }
+        report_flow_table();
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

@@ -8,7 +8,6 @@
 #include "packet_parser.hpp"
 #include "flow_aggregator.hpp"
 #include <chrono>
-using Clock = std::chrono::steady_clock;
 
 std::vector<std::string> get_and_display_interfaces() {
     // use pcap_findalldevs() to list all available network interfaces
@@ -55,8 +54,23 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 
 
 
-void capture_loop(FlowAggregator& aggregator, Clock::time_point last_report, PcapHandle& handle, int packet_count, PacketQueue& packets) {
+void capture_loop(
+    PcapHandle& handle,
+    int packet_count,
+    PacketQueue& packets,
+    std::chrono::milliseconds report_interval,
+    const std::function<void()>& report_callback) {
+    if (report_interval <= std::chrono::milliseconds::zero()) {
+        throw std::invalid_argument("report interval must be positive");
+    }
+
+    char errbuf[PCAP_ERRBUF_SIZE]{};
+    if (pcap_setnonblock(handle.get(), 1, errbuf) != 0) {
+        throw std::runtime_error(errbuf);
+    }
+
     int packets_processed = 0;
+    auto next_report = std::chrono::steady_clock::now() + report_interval;
 
     while (packet_count <= 0 || packets_processed < packet_count) {
         struct pcap_pkthdr* header = nullptr;
@@ -78,9 +92,6 @@ void capture_loop(FlowAggregator& aggregator, Clock::time_point last_report, Pca
                 ++packets_processed;
             }
 
-            // Update the aggregator with the new packet
-            if (packet) aggregator.update(*packet);
-  
         } else if (rc == 0) {
             // timeout; continue
             continue;
@@ -88,6 +99,13 @@ void capture_loop(FlowAggregator& aggregator, Clock::time_point last_report, Pca
             // capture error
             throw std::runtime_error(std::string("pcap_next_ex failed: ") + pcap_geterr(handle.get()));
         }
-        
+
+        const auto now = std::chrono::steady_clock::now();
+        if (now >= next_report) {
+            report_callback();
+            do {
+                next_report += report_interval;
+            } while (next_report <= now);
+        }
     }
 }

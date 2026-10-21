@@ -1,6 +1,7 @@
 #include "flow_aggregator.hpp"
 
 void FlowAggregator::update(const PacketInfo& packet) {
+    std::lock_guard<std::mutex> lock(mutex_);
     FlowKey key{packet.protocol, packet.source_ip, packet.source_port,
                 packet.destination_ip, packet.destination_port};
     
@@ -23,6 +24,7 @@ void FlowAggregator::update(const PacketInfo& packet) {
 // }
 
 FlowSnapshot FlowAggregator::snapshot() const {
+    std::lock_guard<std::mutex> lock(mutex_);
     FlowSnapshot rows;
     rows.reserve(flows_.size());
     for (const std::pair<const FlowKey, FlowStats>& entry : flows_) {

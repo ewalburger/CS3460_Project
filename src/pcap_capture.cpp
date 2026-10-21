@@ -6,6 +6,9 @@
 #include "pcap_capture.hpp"
 #include <optional>
 #include "packet_parser.hpp"
+#include "flow_aggregator.hpp"
+#include <chrono>
+using Clock = std::chrono::steady_clock;
 
 std::vector<std::string> get_and_display_interfaces() {
     // use pcap_findalldevs() to list all available network interfaces
@@ -50,7 +53,9 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 }
 
 
-void capture_loop(PcapHandle& handle, int packet_count, PacketQueue& packets) {
+
+
+void capture_loop(FlowAggregator& aggregator, Clock::time_point last_report, PcapHandle& handle, int packet_count, PacketQueue& packets) {
     int packets_processed = 0;
 
     while (packet_count <= 0 || packets_processed < packet_count) {
@@ -73,7 +78,8 @@ void capture_loop(PcapHandle& handle, int packet_count, PacketQueue& packets) {
                 ++packets_processed;
             }
 
-
+            // Update the aggregator with the new packet
+            if (packet) aggregator.update(*packet);
   
         } else if (rc == 0) {
             // timeout; continue

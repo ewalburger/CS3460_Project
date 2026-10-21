@@ -12,4 +12,4 @@ std::vector<std::string> get_and_display_interfaces();
 // Open a pcap handle for the specified network interface and verify that it supports Ethernet capture.
 PcapHandle open_pcap_handle(const std::string& interface);
 /// Capture and enqueue a specified number of packets.
-void capture_loop(PcapHandle& handle, int packet_count, PacketQueue& packets);
+void capture_loop(FlowAggregator& aggregator, Clock::time_point last_report, PcapHandle& handle, int packet_count, PacketQueue& packets);

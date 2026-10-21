@@ -5,6 +5,9 @@
 #include "flow_aggregator.hpp"
 #include <exception>
 #include <thread>
+#include <chrono>
+using Clock = std::chrono::steady_clock;
+
 
  
 int main()
@@ -39,17 +42,21 @@ int main()
         auto pcap_handle = open_pcap_handle(interfaces[interface_choice - 1]);
 
         std::cout << "Opened interface: " << interfaces[interface_choice - 1] << std::endl;
-        FlowAggregator aggregator;
         PacketQueue packets;
         std::exception_ptr capture_error;
 
-        std::thread capture_thread([&] {
+        // M2 step 3: create persistent state before loop
+        FlowAggregator aggregator;
+        Clock::time_point last_report = Clock::now();
+
+        std::thread capture_thread(aggregator, last_report, pcap_handle, 10, packets, [&] {
             try {
-                capture_loop(pcap_handle, 10, packets); // Capture 10 packets
+                capture_loop(aggregator, last_report, pcap_handle, 10, packets); // Capture 10 packets
             } catch (...) {
                 capture_error = std::current_exception();
             }
             packets.close();
+
         });
 
         std::thread update_thread([&] {

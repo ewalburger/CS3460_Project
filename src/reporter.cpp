@@ -67,6 +67,6 @@ std::string Reporter::summarize(const FlowSnapshot snapshot, const int interval,
 
 
 
-void Reporter::report(const PacketInfo& packet) const {
-    // std::cout << summarize(packet) << std::endl;
+void Reporter::report(const FlowSnapshot snapshot, const int interval, const int showing, std::string sortBy) const {
+     std::cout << summarize(snapshot, interval, showing, sortBy) << std::endl;
 }

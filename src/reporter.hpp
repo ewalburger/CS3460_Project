@@ -12,7 +12,7 @@ private:
     
 public:
 
-    void report(const PacketInfo& packet) const;
+    void report(const FlowSnapshot snapshot, const int interval, const int showing, std::string sortBy) const;
 
     static std::string protocolToString(TransportProtocol protocol);
 

@@ -20,6 +20,24 @@ int main()
         std::cout << "\nEnter the interface number you want to use: ";
         std::cin >> choice;
 
+        std::cout << "\nEnter the interval in seconds for flow reporting: ";
+        int interval = 0;
+        std::cin >> interval;
+
+        std::cout << "\nEnter the number of flows to show in the report: ";
+        int showing = 0;
+        std::cin >> showing;
+
+
+        std::cout << "\nEnter the sorting criteria (packets/bytes): ";
+        std::string sortBy;
+        std::cin >> sortBy;
+
+        while (sortBy != "packets" && sortBy != "bytes") {
+            std::cerr << "Invalid sorting criteria. Please enter 'packets' or 'bytes': ";
+            std::cin >> sortBy;
+        }
+
         // call open_pcap_handle with the chosen interface
         if (choice < 1 || choice > interfaces.size()) {
             std::cerr << "Invalid choice." << std::endl;
@@ -39,15 +57,19 @@ int main()
 
         const auto snapshot = aggregator.snapshot();
         std::cout << "\nFlow Summary:\n";
-        for (const FlowRow& row : snapshot) {
-            std::cout << row.key.source_ip << ":" << row.key.source_port
-                      << " -> "
-                      << row.key.destination_ip << ":" << row.key.destination_port
-                      << " Protocol: " << Reporter::protocolToString(row.key.protocol)
-                      << " Packets: " << row.stats.packet_count
-                      << " Bytes: " << row.stats.byte_count
-                      << std::endl;
-        }
+
+        std::cout << reporter.summarize(snapshot, interval, showing, sortBy);
+        
+
+        // for (const FlowRow& row : snapshot) {
+        //     std::cout << row.key.source_ip << ":" << row.key.source_port
+        //               << " -> "
+        //               << row.key.destination_ip << ":" << row.key.destination_port
+        //               << " Protocol: " << Reporter::protocolToString(row.key.protocol)
+        //               << " Packets: " << row.stats.packet_count
+        //               << " Bytes: " << row.stats.byte_count
+        //               << std::endl;
+        // }
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

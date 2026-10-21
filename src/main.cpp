@@ -3,7 +3,9 @@
 #include "pcap_capture.hpp"
 #include "reporter.hpp"
 #include "flow_aggregator.hpp"
+#include <condition_variable>
 #include <exception>
+#include <mutex>
 #include <thread>
 #include <chrono>
 
@@ -25,6 +27,10 @@ int main()
         std::cout << "\nEnter the interval in seconds for flow reporting: ";
         int interval = 0;
         std::cin >> interval;
+        if (interval < 1 || interval > 2) {
+            std::cerr << "Report interval must be 1 or 2 seconds." << std::endl;
+            return 1;
+        }
 
         std::cout << "\nEnter the number of flows to show in the report: ";
         int showing = 0;
@@ -55,26 +61,40 @@ int main()
         Reporter reporter;
         FlowAggregator aggregator;
         const auto report_interval = std::chrono::seconds(interval);
+        std::mutex report_mutex;
+        std::condition_variable report_condition;
+        bool stop_reporting = false;
         const auto report_flow_table = [&] {
             const auto snapshot = aggregator.snapshot();
             std::cout << "\nFlow Summary:\n";
             std::cout << reporter.summarize(snapshot, interval, showing, sortBy);
-      
         };
 
         std::thread capture_thread([&] {
             try {
-                capture_loop(
-                    pcap_handle,
-                    10,
-                    packets,
-                    report_interval,
-                    report_flow_table);
+                capture_loop(pcap_handle, 10, packets);
             } catch (...) {
                 capture_error = std::current_exception();
             }
             packets.close();
 
+        });
+
+        std::thread reporter_thread([&] {
+            std::unique_lock<std::mutex> lock(report_mutex);
+            while (!stop_reporting) {
+                const auto deadline =
+                    std::chrono::steady_clock::now() + report_interval;
+                if (report_condition.wait_until(lock, deadline, [&] {
+                        return stop_reporting;
+                    })) {
+                    break;
+                }
+
+                lock.unlock();
+                report_flow_table();
+                lock.lock();
+            }
         });
 
         std::thread update_thread([&] {
@@ -86,28 +106,18 @@ int main()
         capture_thread.join();
         update_thread.join();
 
+        {
+            std::lock_guard<std::mutex> lock(report_mutex);
+            stop_reporting = true;
+        }
+        report_condition.notify_one();
+        reporter_thread.join();
+
         if (capture_error) {
             std::rethrow_exception(capture_error);
         }
 
-        
         report_flow_table();
-        const auto snapshot = aggregator.snapshot();
-        std::cout << "\nFlow Summary:\n";
-
-
-        
-        
-
-        // for (const FlowRow& row : snapshot) {
-        //     std::cout << row.key.source_ip << ":" << row.key.source_port
-        //               << " -> "
-        //               << row.key.destination_ip << ":" << row.key.destination_port
-        //               << " Protocol: " << Reporter::protocolToString(row.key.protocol)
-        //               << " Packets: " << row.stats.packet_count
-        //               << " Bytes: " << row.stats.byte_count
-        //               << std::endl;
-        // }
     }
     catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

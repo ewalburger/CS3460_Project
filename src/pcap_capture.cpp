@@ -2,11 +2,11 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
-#include <vector>
 #include <iostream>
 #include "pcap_capture.hpp"
 #include <optional>
 #include "packet_parser.hpp"
+#include "flow_aggregator.hpp"
 
 std::vector<std::string> get_and_display_interfaces() {
     // use pcap_findalldevs() to list all available network interfaces
@@ -51,9 +51,15 @@ PcapHandle open_pcap_handle(const std::string& interface) {
 }
 
 
-std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
+
+
+void capture_loop(PcapHandle& handle, int packet_count, PacketQueue& packets) {
+    char errbuf[PCAP_ERRBUF_SIZE]{};
+    if (pcap_setnonblock(handle.get(), 1, errbuf) != 0) {
+        throw std::runtime_error(errbuf);
+    }
+
     int packets_processed = 0;
-    std::vector<PacketInfo> packets;
 
     while (packet_count <= 0 || packets_processed < packet_count) {
         struct pcap_pkthdr* header = nullptr;
@@ -71,11 +77,10 @@ std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
             std::optional<PacketInfo> packet = parse_headers(bytes, capturedLen, wireLen);
 
             if (packet.has_value()) {
-                packets.push_back(*packet);
+                packets.push(std::move(*packet));
+                ++packets_processed;
             }
 
-
-            ++packets_processed;
         } else if (rc == 0) {
             // timeout; continue
             continue;
@@ -83,9 +88,6 @@ std::vector<PacketInfo> capture_loop(PcapHandle& handle, int packet_count) {
             // capture error
             throw std::runtime_error(std::string("pcap_next_ex failed: ") + pcap_geterr(handle.get()));
         }
-        
+
     }
-
-    return packets;
 }
-

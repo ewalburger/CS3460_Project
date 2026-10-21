@@ -1,3 +1,5 @@
+ cmake_minimum_required(VERSION 3.22)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PCAP REQUIRED IMPORTED_TARGET libpcap)
 add_executable(flow_monitor

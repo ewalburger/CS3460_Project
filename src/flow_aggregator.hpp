@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <map>
+#include <mutex>
 #include <vector>
 #include "packet_info.hpp"
 
@@ -43,4 +44,5 @@ public:
     FlowSnapshot snapshot() const;
 private:
     FlowTable flows_; // Persists across reports.
+    mutable std::mutex mutex_;
 };

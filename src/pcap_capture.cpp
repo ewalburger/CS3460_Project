@@ -8,6 +8,18 @@
 #include "packet_parser.hpp"
 #include "flow_aggregator.hpp"
 
+namespace {
+volatile std::sig_atomic_t stop_requested = 0;
+}
+
+void handle_sigint(int) {
+    stop_requested = 1;
+}
+
+bool capture_stop_requested() {
+    return stop_requested != 0;
+}
+
 std::vector<std::string> get_and_display_interfaces() {
     // use pcap_findalldevs() to list all available network interfaces
     pcap_if_t *alldevs = nullptr;
@@ -59,11 +71,7 @@ void capture_loop(PcapHandle& handle, PacketQueue& packets) {
         throw std::runtime_error(errbuf);
     }
 
-    bool stop_capture = false;
-
-    int packets_processed = 0;
-
-    while (!stop_capture) {
+    while (!capture_stop_requested()) {
         struct pcap_pkthdr* header = nullptr;
         const u_char* bytes = nullptr;
 
@@ -80,7 +88,6 @@ void capture_loop(PcapHandle& handle, PacketQueue& packets) {
 
             if (packet.has_value()) {
                 packets.push(std::move(*packet));
-                ++packets_processed;
             }
 
         } else if (rc == 0) {

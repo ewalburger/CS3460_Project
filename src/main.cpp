@@ -8,6 +8,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include <csignal>
 
  
 int main()
@@ -55,6 +56,10 @@ int main()
 
         auto pcap_handle = open_pcap_handle(interfaces[interface_choice - 1]);
 
+        if (std::signal(SIGINT, handle_sigint) == SIG_ERR) {
+            throw std::runtime_error("Unable to install SIGINT handler.");
+        }
+
         std::cout << "Opened interface: " << interfaces[interface_choice - 1] << std::endl;
         PacketQueue packets;
         std::exception_ptr capture_error;
@@ -86,6 +91,10 @@ int main()
                 const auto deadline =
                     std::chrono::steady_clock::now() + report_interval;
                 if (report_condition.wait_until(lock, deadline, [&] {
+                    // print that the reporting is about to stop
+                    if (stop_reporting) {
+                        std::cout << "\nStopping flow reporting..." << std::endl;
+                    }
                         return stop_reporting;
                     })) {
                     break;

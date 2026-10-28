@@ -72,7 +72,7 @@ int main()
 
         std::thread capture_thread([&] {
             try {
-                capture_loop(pcap_handle, 10, packets);
+                capture_loop(pcap_handle, packets);
             } catch (...) {
                 capture_error = std::current_exception();
             }

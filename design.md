@@ -143,7 +143,24 @@ Design tests to verify the major requirements and system functionality. For each
 - [ ] briefly explain how your planned tests covered the major requirements.
 **tests only need to be designed in this milestone, they will be implemented and executed in the final milestone**
 
+Each Test name corresponds with requirement id
+| ID  |Test | Classes involved | Expected result |
+|---|---|---|---|
+| R1 | Provide several packets through a fake capture source and verify they are processed as they become available. | `PcapCapture`, `PacketParser`, `PacketQueue`, `FlowMonitor` | Each available packet is parsed, queued, and aggregated without waiting for the capture to end. |
+| R2 | Supply a list of interfaces, select a valid interface, and attempt to open it. Also test invalid selections. | `NetworkInterfaceManager`, `PcapCapture` | A valid interface opens successfully; invalid choices produce a clear error without crashing. |
+| R3 | Create one TCP packet and one UDP packet with the same addresses and ports. | `PacketParser`, `Packet`, `FlowAggregator`, `ReportFormatter` | The packets are classified correctly and appear as separate TCP and UDP flows. |
+| R4 | Trigger the stop mechanism, simulating `SIGINT`, while capture and reporting threads are running. | `PcapCapture`, `FlowMonitor`, `PacketQueue` | Capture stops, the queue closes, worker threads join, and the program exits normally with a clear message. |
+| R5 | Configure a one-second reporting interval and measure report timestamps. | `ReportConfiguration`, `FlowMonitor`, `ReportFormatter` | Reports are produced approximately once per configured interval. |
+| R6 | Send packets for two directional flows: A → B and B → A. | `Packet`, `FlowRow`, `FlowAggregator` | Two rows are produced because reversed source/destination fields represent different flows. |
+| R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
+| R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
+| R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
 
+# This document is unfinished
+- elaborate more on class info and test info?
+- emberly takes test design section, make it look similar to example
+- jayne and gannon split up part 2
+- everyone go through document and check for mistakes
 
 
 

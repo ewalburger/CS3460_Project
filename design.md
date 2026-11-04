@@ -25,25 +25,22 @@ Describe how you plan to organize your project using C++ classes. Design should 
 - [ ] class interactions: explain how the classes work together to implement the major system functionality 
 
 ## Major Classes
-| Class | Responsibility | Important data members | Main functionality/interface | 
-| :------ | :-------: | :------: | :------: |
-| Class1 |  |  |  |
-
-
-The program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
+Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
 
 Suggested classes
-|Class	 | Responsibility	| Existing code to move |
-| :------ | :-------: | :------: | 
-| NetworkInterfaceManager	| Discover interfaces, display them, validate the user’s selection	| get_and_display_interfaces() | 
-| PcapCapture	| Own the pcap_t handle and capture packets |	open_pcap_handle(), capture_loop() |
-| PacketParser | Convert raw Ethernet/IP/TCP/UDP bytes into PacketInfo |	parse_headers() |
-| Packet |	Represent a parsed packet with addresses, ports, protocol, and size	| Replace or wrap PacketInfo |
-| FlowRow |	Represent one communication flow and update its statistics | Combine FlowKey and FlowStats |
-| FlowAggregator	| Store flows, update them, and produce snapshots |	Keep existing FlowAggregator |
-| ReportConfiguration	| Store interval, number of flows, and sorting choice	| Input variables in main() |
-| ReportFormatter	| Sort and format flow data for display	| Keep existing Reporter |
-| FlowMonitor	| Coordinate capture, queue processing, aggregation, and reporting threads | Most of main.cpp |
+|Class	 | Responsibility	| Existing code to move | Requirements Satisfied |
+| :------ | :-------: | :------: | :------: |
+| NetworkInterfaceManager	| Discover interfaces, display them, validate the user’s selection	| get_and_display_interfaces() | R2 | 
+| PcapCapture	| Own the pcap_t handle and capture packets |	open_pcap_handle(), capture_loop() | R1, R3 |
+| PacketParser | Convert raw Ethernet/IP/TCP/UDP bytes into PacketInfo |	parse_headers() | R3 (this gathers info used in later requirements) |
+| Packet |	Represent a parsed packet with addresses, ports, protocol, and size	| Replace or wrap PacketInfo | formats info for later requirements |
+| FlowRow |	Represent one communication flow and update its statistics | Combine FlowKey and FlowStats | R6, R8 | 
+| FlowAggregator	| Store flows, update them, and produce snapshots |	Keep existing FlowAggregator | R6, R8 |
+| ReportConfiguration	| Store interval, number of flows, and sorting choice	| Input variables in main() | R5, R6, R7, R9 |
+| ReportFormatter	| Sort and format flow data for display	| Keep existing Reporter | R3, R5, R6, R7, R9 |
+| FlowMonitor	| Coordinate capture, queue processing, aggregation, and reporting threads | Most of main.cpp | R4, covers all requirements |
+
+Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
 
 ## UML diagram 
 ```mermaid

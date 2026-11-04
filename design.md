@@ -30,6 +30,111 @@ Describe how you plan to organize your project using C++ classes. Design should 
 | Class1 |  |  |  |
 
 
+The program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
+
+Suggested classes
+|Class	 | Responsibility	| Existing code to move |
+| :------ | :-------: | :------: | 
+| NetworkInterfaceManager	| Discover interfaces, display them, validate the user’s selection	| get_and_display_interfaces() | 
+| PcapCapture	| Own the pcap_t handle and capture packets |	open_pcap_handle(), capture_loop() |
+| PacketParser | Convert raw Ethernet/IP/TCP/UDP bytes into PacketInfo |	parse_headers() |
+| Packet |	Represent a parsed packet with addresses, ports, protocol, and size	| Replace or wrap PacketInfo |
+| FlowRow |	Represent one communication flow and update its statistics | Combine FlowKey and FlowStats |
+| FlowAggregator	| Store flows, update them, and produce snapshots |	Keep existing FlowAggregator |
+| ReportConfiguration	| Store interval, number of flows, and sorting choice	| Input variables in main() |
+| ReportFormatter	| Sort and format flow data for display	| Keep existing Reporter |
+| FlowMonitor	| Coordinate capture, queue processing, aggregation, and reporting threads | Most of main.cpp |
+
+## UML diagram 
+```mermaid
+classDiagram
+    class NetworkInterfaceManager {
+        +discoverInterfaces() vector~string~
+        +displayInterfaces()
+        +selectInterface() string
+    }
+
+
+    class PcapCapture {
+        -PcapHandle handle
+        -PacketParser parser
+        +open(interfaceName)
+        +capturePackets(queue)
+        +stop()
+    }
+
+    class PacketParser {
+        +parse(bytes, caplen, wireBytes) optional~Packet~
+    }
+
+    class Packet {
+        +sourceIp string
+        +destinationIp string
+        +sourcePort uint16
+        +destinationPort uint16
+        +protocol TransportProtocol
+        +wireBytes uint32
+    }
+
+    class PacketQueue {
+        +push(packet)
+        +pop() optional~Packet~
+        +close()
+    }
+
+    class FlowRow {
+        +FlowKey key
+        +FlowStats stats
+        +recordPacket(bytes)
+    }
+
+    class FlowAggregator {
+        -flows map
+        +update(packet)
+        +snapshot() FlowSnapshot
+    }
+
+    class ReportConfiguration {
+        +interval int
+        +numberToShow int
+        +sortCriterion SortCriterion
+    }
+
+    class ReportFormatter {
+        +sortByPackets(snapshot)
+        +sortByBytes(snapshot)
+        +format(snapshot, configuration) string
+    }
+
+    class FlowMonitor {
+        -PcapCapture capture
+        -PacketQueue packetQueue
+        -FlowAggregator aggregator
+        -ReportFormatter formatter
+        -ReportConfiguration configuration
+        +run()
+        -capturePackets()
+        -aggregatePackets()
+        -reportFlows()
+    }
+
+    NetworkInterfaceManager ..> PcapCapture : selects interface
+    PcapCapture *-- PacketParser : owns
+    PcapCapture --> PacketQueue : pushes packets
+    PacketParser ..> Packet : creates
+    PacketQueue o-- Packet : stores
+    FlowMonitor *-- PcapCapture
+    FlowMonitor *-- PacketQueue
+    FlowMonitor *-- FlowAggregator
+    FlowMonitor *-- ReportFormatter
+    FlowMonitor *-- ReportConfiguration
+    FlowAggregator *-- FlowRow : stores
+    FlowAggregator ..> Packet : processes
+    ReportFormatter ..> FlowRow : formats
+    ReportFormatter ..> ReportConfiguration : uses
+
+```
+
 **focus on explaining how your design satisfies these requirements, rather than simply listing classes and functions**
 
 # 3. Test Design

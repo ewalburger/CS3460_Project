@@ -42,8 +42,6 @@ Suggested classes
 
 Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
 
-- 
-
 - The PcapCapture is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 
 - The PacketParser takes the raw data of a captured packet and converts it into a Packet. It is responsible for making the information of the raw packet intelligible for later report. Since it is used to make reporting TCP and UDP packets easier, it helps satisfy R3.
@@ -53,12 +51,6 @@ Describe how each class satisfies requirements listed. (follow 2.2 in example re
 - The FlowRow represents a communication flow. It is stored in the FlowAggregator and gets updated if a Packet comes in from the same line of communication. Since each FlowRow is separate based on the line of communication, and it is stored and updated, they help to satisfy R6 and R8.
 
 - The FlowAggregator stores the FlowRows, updates them, and produces snapshots. By storing and updating the FlowRows, it helps to satisfy R6 and R8.
-
--
-
--
-
--
 
 ## UML diagram 
 ```mermaid
@@ -150,29 +142,24 @@ classDiagram
 
 ```
 
-**focus on explaining how your design satisfies these requirements, rather than simply listing classes and functions**
-
 # 3. Test Design
-Design tests to verify the major requirements and system functionality. For each test, provide:
-- [ ] target: the requirement or component being tested
-- [ ] input/setup: the input or conditions required
-- [ ] expected result: the expected behaivior or output.
-[ ] include normal cases and important error/edge cases.
-- [ ] briefly explain how your planned tests covered the major requirements.
-**tests only need to be designed in this milestone, they will be implemented and executed in the final milestone**
 
-Each Test name corresponds with requirement id
-| ID  |Test | Classes involved | Expected result |
-|---|---|---|---|
-| R1 | Provide several packets through a fake capture source and verify they are processed as they become available. | `PcapCapture`, `PacketParser`, `PacketQueue`, `FlowMonitor` | Each available packet is parsed, queued, and aggregated without waiting for the capture to end. |
-| R2 | Supply a list of interfaces, select a valid interface, and attempt to open it. Also test invalid selections. | `NetworkInterfaceManager`, `PcapCapture` | A valid interface opens successfully; invalid choices produce a clear error without crashing. |
-| R3 | Create one TCP packet and one UDP packet with the same addresses and ports. | `PacketParser`, `Packet`, `FlowAggregator`, `ReportFormatter` | The packets are classified correctly and appear as separate TCP and UDP flows. |
-| R4 | Trigger the stop mechanism, simulating `SIGINT`, while capture and reporting threads are running. | `PcapCapture`, `FlowMonitor`, `PacketQueue` | Capture stops, the queue closes, worker threads join, and the program exits normally with a clear message. |
-| R5 | Configure a one-second reporting interval and measure report timestamps. | `ReportConfiguration`, `FlowMonitor`, `ReportFormatter` | Reports are produced approximately once per configured interval. |
-| R6 | Send packets for two directional flows: A → B and B → A. | `Packet`, `FlowRow`, `FlowAggregator` | Two rows are produced because reversed source/destination fields represent different flows. |
-| R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
-| R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
-| R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
+We designed our tests around each requirement.
+The tests listed below cover the whole system by testing small units and how they integrate together to perform the required tasks.
+The planned tests use controlled inputs with known outputs.
+Mocked packet objects will remove the need for actual packet collection in order to test our system.
+
+|Test ID| Requirement ID | Test | Classes involved | Expected result |
+|------|---|---|---|---|
+| T1 | R1 | Provide several packets through a fake capture source and verify they are processed as they become available. | `PcapCapture`, `PacketParser`, `PacketQueue`, `FlowMonitor` | Each available packet is parsed, queued, and aggregated without waiting for the capture to end. |
+| T2 | R2 | Supply a list of interfaces, select a valid interface, and attempt to open it. Also test invalid selections. | `NetworkInterfaceManager`, `PcapCapture` | A valid interface opens successfully; invalid choices produce a clear error without crashing. |
+| T3 | R3 | Create one TCP packet and one UDP packet with the same addresses and ports. | `PacketParser`, `Packet`, `FlowAggregator`, `ReportFormatter` | The packets are classified correctly and appear as separate TCP and UDP flows. |
+| T4 | R4 | Trigger the stop mechanism, simulating `SIGINT`, while capture and reporting threads are running. | `PcapCapture`, `FlowMonitor`, `PacketQueue` | Capture stops, the queue closes, worker threads join, and the program exits normally with a clear message. |
+| T5 | R5 | Configure a one-second reporting interval and measure report timestamps. | `ReportConfiguration`, `FlowMonitor`, `ReportFormatter` | Reports are produced approximately once per configured interval. |
+| T6 | R6 | Send packets for two directional flows: A → B and B → A. | `Packet`, `FlowRow`, `FlowAggregator` | Two rows are produced because reversed source/destination fields represent different flows. |
+| T7 | R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
+| T8 | R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
+| T9 | R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
 
 # This document is unfinished
 - elaborate more on class info and test info?

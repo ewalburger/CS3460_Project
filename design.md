@@ -1,27 +1,30 @@
-# 1. Requirements Analysis
+# Milestone 3 - System Design for Refactoring
 
-This system captures live network flow for TCP and UDP packets. The program prints off live flow reports in a specified interval. Flow is sorted by number of packets or number of bytes specified by the user. The system uses threads to maintain persistent flow records.
+## 1. Requirements Analysis
+
+This system captures live network flow for TCP and UDP packets. The program prints off live flow reports in a specified interval. Flow is sorted by the number of packets or number of bytes specified by the user. The system uses threads to maintain persistent flow records and print packet reports as packets arrive.
 
 | ID | Requirement |
 | :------ | :------- |
 | R1 | capture flow packets as they become available |
 | R2 | allow the user to select and open an interface |
-| R3 | report TCP or UDP (differenciate between them) |
+| R3 | report TCP or UDP depending on the packet |
 | R4 | interrupting the program stops the program clearly without abnormal termination |
-| R5 | user selects interval, reports every interval |
-| R6 | each report shows one row per directional 5 tuple (flow) | 
+| R5 | user selects interval, the program then reports every interval |
+| R6 | each report shows one row per directional 5 tuple (flow) along with the number of packets per 5 tuple | 
 | R7 | user selects byte sort mode or packet sort mode and sorts in descending order by # of packets or # of bytes |
 | R8 | byte statistics and packet reporting are persistent accross reports (updates instead of new) |
-| R9 | user selects # of displayed flow rows |
+| R9 | user selects number of displayed flow rows |
 
+## 2. System Design
 
-# 2. System Design
+### Major Classes
+Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures.
+The main opportunity for this redesign is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
+Below is a table with each class that we plan on making for the final milestone, along with the class's main responsibility and the requirements it satisfies.
+By splitting our code up into smaller classes, we are making our design more modular, which will improve readability and maintainability.
 
-## Major Classes
-Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
-
-Suggested classes
-|Class	 | Responsibility	| Existing code to move | Requirements Satisfied |
+| Class	 | Responsibility	| Existing code to move | Requirements Satisfied |
 | :------ | :-------: | :------: | :------: |
 | NetworkInterfaceManager	| Discover interfaces, display them, validate the user’s selection	| get_and_display_interfaces() | R2 | 
 | PcapCapture	| Own the pcap_t handle and capture packets |	open_pcap_handle(), capture_loop() | R1, R3 |
@@ -36,6 +39,7 @@ Suggested classes
 Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
 
 - The `NetworkInterfaceManager` manages the network interfaces on the computer. It finds available interfaces using `pcap_finalldevs()`, and stores the interface names and descriptions. This class also displays the interfaces to the user to be selected, and validates the selected interface number. Finally, it returns the selected interface name. All of these actions satisfy R2.
+- The PcapCapture is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 
 - The `PcapCapture` is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 
@@ -54,7 +58,8 @@ Describe how each class satisfies requirements listed. (follow 2.2 in example re
 - `FlowMonitor` would be the main appilication coordinator. It connects the capture, queue, aggregation, and reporting classes. Most of the logic it will contain is currently inside of `main.cpp`. This logic includes creating the packet queue, starting the capture thread, starting the reporting thread, stopping threads, joining threads, and handling capture errors. This class is responsible for queue behavior and updating the flow aggregator. It also handles the clean termination, closes the queue and all the worker threads when the program is finished.
 
 
-## UML diagram 
+### UML diagram and Class Relationships
+
 ```mermaid
 classDiagram
     class NetworkInterfaceManager {
@@ -144,7 +149,7 @@ classDiagram
 
 ```
 
-# 3. Test Design
+## 3. Test Design
 
 We designed our tests around each requirement.
 The tests listed below cover the whole system by testing small units and how they integrate together to perform the required tasks.

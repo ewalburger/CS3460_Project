@@ -174,3 +174,15 @@ During the final milestone if we think of other potential test cases, we will be
 | T7 | R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
 | T8 | R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
 | T9 | R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
+
+## Optional Bonus - Strategy Design Pattern
+
+The Strategy design pattern fits our design well, especially for flow sorting.
+Without the Strategy Design Pattern, the ReportFormatter has separate packet and byte sorting responsibilities and the ReportConfiguration stores which mode the user chooses.
+But with the Strategy design pattern, we can make the sorting rules interchangeable without tying them to the ReportFormatter.
+This will help with class specificity and modularity.
+Applying this model is helpful for making each sort rule independently testable and separate from the text formatting done in the ReportFormatter.
+Our plan is to introduce a sorting interface with two implementations:
+
+* `PacketCountSortStrategy` which sorts by packet count, descending
+* `ByteCountSortStrategy` which sorts by byte count, descending

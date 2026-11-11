@@ -42,6 +42,24 @@ Suggested classes
 
 Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
 
+- 
+
+- The PcapCapture is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
+
+- The PacketParser takes the raw data of a captured packet and converts it into a Packet. It is responsible for making the information of the raw packet intelligible for later report. Since it is used to make reporting TCP and UDP packets easier, it helps satisfy R3.
+
+- The Packet is the representation of a packet used to make reporting easier. It is used to update FlowRows in the FlowAggregator. Its formatting helps make several requirements later on simpler.
+   
+- The FlowRow represents a communication flow. It is stored in the FlowAggregator and gets updated if a Packet comes in from the same line of communication. Since each FlowRow is separate based on the line of communication, and it is stored and updated, they help to satisfy R6 and R8.
+
+- The FlowAggregator stores the FlowRows, updates them, and produces snapshots. By storing and updating the FlowRows, it helps to satisfy R6 and R8.
+
+-
+
+-
+
+-
+
 ## UML diagram 
 ```mermaid
 classDiagram

@@ -33,6 +33,7 @@ By splitting our code up into smaller classes, we are making our design more mod
 | FlowRow |	Represent one communication flow and update its statistics | Combine FlowKey and FlowStats | R6, R8 | 
 | FlowAggregator	| Store flows, update them, and produce snapshots |	Keep existing FlowAggregator | R6, R8 |
 | ReportConfiguration	| Store interval, number of flows, and sorting choice	| Input variables in main() | R5, R6, R7, R9 |
+| SortStrategy | Define the interface for sorting flow snapshots | New interface | R7 | | PacketCountSortStrategy | Sort flows by packet count in descending order | New class implementing SortStrategy | R7 | | ByteCountSortStrategy | Sort flows by byte count in descending order | New class implementing SortStrategy | R7 |
 | ReportFormatter	| Sort and format flow data for display	| Keep existing Reporter | R3, R5, R6, R7, R9 |
 | FlowMonitor	| Coordinate capture, queue processing, aggregation, and reporting threads | Most of main.cpp | R4, covers all requirements |
 
@@ -50,12 +51,17 @@ Describe how each class satisfies requirements listed. (follow 2.2 in example re
 
 - The `FlowAggregator` stores the `FlowRows`, updates them, and produces snapshots. By storing and updating the FlowRows, it helps to satisfy R6 and R8.
 
-- `ReportConfigurator` stores the user's reporting choices in one object. This object groups them together and validates them. The choices stored in this object are the reporting interval, max rows to display, and sorting method. These stored choices satisfy a portion of R5, R6, R7, and R9.
+- `ReportConfiguration` stores and validates the user's reporting choices in one object. These choices include the reporting interval, maximum number of rows to display, and sort criterion.
 
-- `ReportFormatter` converts the flow data into text readable by the user. The current `Reporter` class performs most of this responsiblity, so this class could be a renamed, updated version of this already existing class. This class satisfies a portion of R3, R5, R6, R7, and R9 by making the requested information visible to the user. This class formats requested information to produce a report string that is ready to print.
+- `SortStrategy` defines a common interface for ordering a flow snapshot. This lets the report use different sorting rules without placing those rules directly in ReportFormatter.
 
-- `FlowMonitor` would be the main appilication coordinator. It connects the capture, queue, aggregation, and reporting classes. Most of the logic it will contain is currently inside of `main.cpp`. This logic includes creating the packet queue, starting the capture thread, starting the reporting thread, stopping threads, joining threads, and handling capture errors. This class is responsible for queue behavior and updating the flow aggregator. It also handles the clean termination, closes the queue and all the worker threads when the program is finished.
+- `PacketCountSortStrategy` implements SortStrategy by ordering flows by packet count in descending order. It is selected when the user chooses packet sort mode.
 
+- `ByteCountSortStrategy` implements SortStrategy by ordering flows by byte count in descending order. It is selected when the user chooses byte sort mode.
+
+- `ReportFormatter` converts flow data into text that is readable by the user. It uses the selected SortStrategy to order the snapshot, applies the configured row limit, and formats the result. The current Reporter class performs much of this responsibility, so ReportFormatter could be an updated version of it.
+
+- `FlowMonitor` is the main application coordinator. It connects the capture, queue, aggregation, and reporting classes. Most of the logic it will contain is currently inside main.cpp. This logic includes creating the packet queue, starting the capture thread, starting the reporting thread, stopping threads, joining threads, and handling capture errors. This class is responsible for queue behavior and updating the flow aggregator. It also handles the clean termination, closes the queue and all the worker threads when the program is finished. It uses the sort criterion in ReportConfiguration to select the appropriate sorting strategy before requesting a report.
 
 ### UML diagram and Class Relationships
 
@@ -66,7 +72,6 @@ classDiagram
         +displayInterfaces()
         +selectInterface() string
     }
-
 
     class PcapCapture {
         -PcapHandle handle
@@ -113,10 +118,21 @@ classDiagram
         +sortCriterion SortCriterion
     }
 
+    class SortStrategy {
+        <<interface>>
+        +sort(snapshot) FlowSnapshot
+    }
+
+    class PacketCountSortStrategy {
+        +sort(snapshot) FlowSnapshot
+    }
+
+    class ByteCountSortStrategy {
+        +sort(snapshot) FlowSnapshot
+    }
+
     class ReportFormatter {
-        +sortByPackets(snapshot)
-        +sortByBytes(snapshot)
-        +format(snapshot, configuration) string
+        +format(snapshot, configuration, strategy) string
     }
 
     class FlowMonitor {
@@ -126,6 +142,7 @@ classDiagram
         -ReportFormatter formatter
         -ReportConfiguration configuration
         +run()
+        -selectSortStrategy() SortStrategy
         -capturePackets()
         -aggregatePackets()
         -reportFlows()
@@ -145,7 +162,9 @@ classDiagram
     FlowAggregator ..> Packet : processes
     ReportFormatter ..> FlowRow : formats
     ReportFormatter ..> ReportConfiguration : uses
-
+    ReportFormatter ..> SortStrategy : uses
+    PacketCountSortStrategy ..|> SortStrategy
+    ByteCountSortStrategy ..|> SortStrategy
 ```
 
 ### Class Interactions
@@ -165,14 +184,16 @@ The classes will work together as a pipeline coordinated by `FlowMonitor`
 7. `FlowAggregator -> FlowRow`
    - For a new five-tuple, the aggregator creates a FlowRow. For an existing flow, it updates that row’s packet count and byte count. The flow data persists across reports.
 8. `ReportConfiguration -> FlowMonitor`
-   - ReportConfiguration stores the user’s interval, sorting option, and number of rows to display. FlowMonitor uses the interval to determine when reports should be generated.
-9. `FlowAggregator -> ReportFormatter`
-   - At each reporting interval, FlowMonitor requests a snapshot of the flow table from FlowAggregator and passes it to ReportFormatter.
-10. `ReportConfiguration -> ReportFormatter`
-    - ReportFormatter uses the configuration to sort the snapshot by packets or bytes and limit the number of displayed rows.
-11. `ReportFormatter -> User`
-    - The formatter converts the selected flow rows into readable text showing TCP or UDP, addresses, ports, packet counts, and byte counts.
-12. Shutdown Interactions
+   - `ReportConfiguration` stores the user's interval, sort criterion, and maximum number of rows. `FlowMonitor` uses the interval to determine when reports should be generated.
+9. `FlowMonitor -> SortStrategy`
+   - When generating a report, `FlowMonitor` selects `PacketCountSortStrategy` or `ByteCountSortStrategy` based on the configured sort criterion.
+10. `FlowAggregator -> ReportFormatter`
+   - At each reporting interval, `FlowMonitor` requests a snapshot of the flow table from `FlowAggregator` and passes it to `ReportFormatter`.
+11. `ReportFormatter -> SortStrategy`
+   - `ReportFormatter` uses the selected strategy to sort the snapshot, then applies the configured row limit.
+12. `ReportFormatter -> User`
+   - The formatter converts the selected flow rows into readable text showing TCP or UDP, addresses, ports, packet counts, and byte counts.
+13. Shutdown Interactions
     - When the user presses `Ctrl+C`, `FlowMonitor` signals `PcapCapture` to stop. The queue is closed, worker threads finish processing, and all threads are joined before the program exits normally.
 
 ## 3. Test Design
@@ -198,7 +219,7 @@ During the final milestone if we think of other potential test cases, we will be
 | T4 | R4 | Trigger the stop mechanism, simulating `SIGINT`, while capture and reporting threads are running. | `PcapCapture`, `FlowMonitor`, `PacketQueue` | Capture stops, the queue closes, worker threads join, and the program exits normally with a clear message. |
 | T5 | R5 | Configure a one-second reporting interval and measure report timestamps. | `ReportConfiguration`, `FlowMonitor`, `ReportFormatter` | Reports are produced approximately once per configured interval. |
 | T6 | R6 | Send packets for two directional flows: A → B and B → A. | `Packet`, `FlowRow`, `FlowAggregator` | Two rows are produced because reversed source/destination fields represent different flows. |
-| T7 | R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
+| T7 | R7 | Add flows with known packet and byte totals, then test both sorting strategies. | FlowAggregator, ReportFormatter, PacketCountSortStrategy, ByteCountSortStrategy | PacketCountSortStrategy sorts by packet count descending, and ByteCountSortStrategy sorts by byte count descending. |
 | T8 | R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
 | T9 | R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
 

@@ -18,7 +18,7 @@ This system captures live network flow for TCP and UDP packets. The program prin
 
 ## 2. System Design
 
-## Major Classes
+### Major Classes
 Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes. Below is a table with each class that we plan on making for the final milestone, along with the class's main responsibility and the requirements it satisfies.
 By splitting our code up into smaller classes, we are making our design more modular, which will improve readability and maintainability.
 
@@ -34,8 +34,6 @@ By splitting our code up into smaller classes, we are making our design more mod
 | ReportFormatter	| Sort and format flow data for display	| Keep existing Reporter | R3, R5, R6, R7, R9 |
 | FlowMonitor	| Coordinate capture, queue processing, aggregation, and reporting threads | Most of main.cpp | R4, covers all requirements |
 
-Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
-
 - The PcapCapture is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 
 - The PacketParser takes the raw data of a captured packet and converts it into a Packet. It is responsible for making the information of the raw packet intelligible for later report. Since it is used to make reporting TCP and UDP packets easier, it helps satisfy R3.
@@ -46,7 +44,8 @@ Describe how each class satisfies requirements listed. (follow 2.2 in example re
 
 - The FlowAggregator stores the FlowRows, updates them, and produces snapshots. By storing and updating the FlowRows, it helps to satisfy R6 and R8.
 
-### UML diagram 
+### UML diagram and Class Relationships
+
 ```mermaid
 classDiagram
     class NetworkInterfaceManager {

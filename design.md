@@ -148,6 +148,33 @@ classDiagram
 
 ```
 
+### Class Interactions
+The classes will work together as a pipeline coordinated by `FlowMonitor`
+1.  `NetworkInterfaceManager -> PcapCapture` 
+    - `NetworkInterfaceManager` discovers avaiable interfaces and lets a user choose one. The selected interface name is passed to `PcapCapture`, which opens it through `libcap`.
+2. `PcapCapture -> PacketParser`
+   - `PcapCapture` receives raw packets from the network. It passes their raw bytes to `PacketParser`, which extracts IP addresses, ports, protocol, and packet size.
+3. `PacketParser -> Packet`
+   - If the packet is valid, `PacketParser` creates a `Packet` object. Invalid or unsupported packets are ignored.
+4. `PcapCapture -> PacketQueue`
+   - Parsed packets are pushed into the thread-safe `PacketQueue`. This allows packet capture to continue while another thread processes packets.
+5. `PacketQueue -> FlowMonitor`
+   - `FlowMonitor` runs a processing thread that removes packets from the queue. It passes each packet to `FlowAggregator`.
+6. `Packet -> FlowAggregator`
+   - `FlowAggregator` uses the packet’s five-tuple—protocol, source IP, source port, destination IP, and destination port—to identify its flow.
+7. `FlowAggregator -> FlowRow`
+   - For a new five-tuple, the aggregator creates a FlowRow. For an existing flow, it updates that row’s packet count and byte count. The flow data persists across reports.
+8. `ReportConfiguration -> FlowMonitor`
+   - ReportConfiguration stores the user’s interval, sorting option, and number of rows to display. FlowMonitor uses the interval to determine when reports should be generated.
+9. `FlowAggregator -> ReportFormatter`
+   - At each reporting interval, FlowMonitor requests a snapshot of the flow table from FlowAggregator and passes it to ReportFormatter.
+10. `ReportConfiguration -> ReportFormatter`
+    - ReportFormatter uses the configuration to sort the snapshot by packets or bytes and limit the number of displayed rows.
+11. `ReportFormatter -> User`
+    - The formatter converts the selected flow rows into readable text showing TCP or UDP, addresses, ports, packet counts, and byte counts.
+12. Shutdown Interactions
+    - When the user presses `Ctrl+C`, `FlowMonitor` signals `PcapCapture` to stop. The queue is closed, worker threads finish processing, and all threads are joined before the program exits normally.
+
 ## 3. Test Design
 
 We designed our tests around each requirement.

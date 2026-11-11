@@ -1,7 +1,4 @@
 # 1. Requirements Analysis
-- [x] descirbe what the system should do
-- [ ] make each requirement clear and testable
-- [x] use requirement IDs (R1, R2, and R3)
 
 This system captures live network flow for TCP and UDP packets. The program prints off live flow reports in a specified interval. Flow is sorted by number of packets or number of bytes specified by the user. The system uses threads to maintain persistent flow records.
 
@@ -19,10 +16,6 @@ This system captures live network flow for TCP and UDP packets. The program prin
 
 
 # 2. System Design
-Describe how you plan to organize your project using C++ classes. Design should include
-- [ ] major classes: explain the responsibility, important data members, and main functions/interfaces of each class
-- [ ] class relationships: provide a UML class diagram or equivalent diagram showing how the classes are related (composition, inheritance, or usage)
-- [ ] class interactions: explain how the classes work together to implement the major system functionality 
 
 ## Major Classes
 Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
@@ -148,8 +141,16 @@ We designed our tests around each requirement.
 The tests listed below cover the whole system by testing small units and how they integrate together to perform the required tasks.
 The planned tests use controlled inputs with known outputs.
 Mocked packet objects will remove the need for actual packet collection in order to test our system.
+We will use the tests to make sure that each of the requirements is still being met as we go through the process of refactoring.
+Most of our tests would be considered small integration tests because they are mostly focused on functionality of the system, rather than testing specific method or functions.
+Each method and function will be covered by the tests, which will give us a fast baseline understanding of how everything is functioning as we refactor the system.
 
-|Test ID| Requirement ID | Test | Classes involved | Expected result |
+Below is a table with all of our planned tests to implement and execute in the final milestone.
+They cover all edge cases, such as having packets for two directional flows, and testing invalid selections.
+They also cover all of the normal cases such as receiving packets, not receiving packets, and taking snaptshots.
+During the final milestone if we think of other potential test cases, we will be sure to add them to our design in order to get full coverage of our system.
+
+|Test ID| Requirement ID | Test Setup | Classes involved | Expected result |
 |------|---|---|---|---|
 | T1 | R1 | Provide several packets through a fake capture source and verify they are processed as they become available. | `PcapCapture`, `PacketParser`, `PacketQueue`, `FlowMonitor` | Each available packet is parsed, queued, and aggregated without waiting for the capture to end. |
 | T2 | R2 | Supply a list of interfaces, select a valid interface, and attempt to open it. Also test invalid selections. | `NetworkInterfaceManager`, `PcapCapture` | A valid interface opens successfully; invalid choices produce a clear error without crashing. |
@@ -160,27 +161,3 @@ Mocked packet objects will remove the need for actual packet collection in order
 | T7 | R7 | Add flows with known packet and byte totals, then test both sort modes. | `FlowAggregator`, `ReportFormatter` | Packet mode sorts descending by packet count; byte mode sorts descending by byte count. |
 | T8 | R8 | Add packets, take a snapshot, add more packets, and take another snapshot. | `FlowAggregator`, `FlowRow` | Existing flow totals increase rather than being reset or duplicated. |
 | T9 | R9 | Configure the report to show 1, 3, or more rows. | `ReportConfiguration`, `ReportFormatter` | The report contains no more than the requested number of rows. |
-
-# This document is unfinished
-- elaborate more on class info and test info?
-- emberly takes test design section, make it look similar to example
-- jayne and gannon split up part 2
-- everyone go through document and check for mistakes
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

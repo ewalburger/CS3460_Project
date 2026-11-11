@@ -19,7 +19,9 @@ This system captures live network flow for TCP and UDP packets. The program prin
 ## 2. System Design
 
 ### Major Classes
-Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures. The main opportunity is to move responsibilities currently spread across free functions and main.cpp into cohesive classes. Below is a table with each class that we plan on making for the final milestone, along with the class's main responsibility and the requirements it satisfies.
+Our existing program is already partially object-oriented: PacketQueue, FlowAggregator, and Reporter are classes, while PacketInfo, FlowKey, and FlowStats are data structures.
+The main opportunity for this redesign is to move responsibilities currently spread across free functions and main.cpp into cohesive classes.
+Below is a table with each class that we plan on making for the final milestone, along with the class's main responsibility and the requirements it satisfies.
 By splitting our code up into smaller classes, we are making our design more modular, which will improve readability and maintainability.
 
 | Class	 | Responsibility	| Existing code to move | Requirements Satisfied |

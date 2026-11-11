@@ -39,7 +39,6 @@ By splitting our code up into smaller classes, we are making our design more mod
 Describe how each class satisfies requirements listed. (follow 2.2 in example requirements) A couple sentences for each of these and how they interact.
 
 - The `NetworkInterfaceManager` manages the network interfaces on the computer. It finds available interfaces using `pcap_finalldevs()`, and stores the interface names and descriptions. This class also displays the interfaces to the user to be selected, and validates the selected interface number. Finally, it returns the selected interface name. All of these actions satisfy R2.
-- The PcapCapture is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 
 - The `PcapCapture` is used to capture the packets. It gets the raw data in the capture loop from the pcap handle before passing it to the PacketParser for processing. This allows us to capture packets as they arrive, which is required to report TCP and UDP packets, helping to satisfy R1 and R3.
 

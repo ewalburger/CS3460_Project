@@ -14,7 +14,7 @@ This system captures live network flow for TCP and UDP packets. The program prin
 | R6 | each report shows one row per directional 5 tuple (flow) along with the number of packets per 5 tuple | 
 | R7 | user selects byte sort mode or packet sort mode and sorts in descending order by # of packets or # of bytes |
 | R8 | byte statistics and packet reporting are persistent accross reports (updates instead of new) |
-| R9 | user selects # of displayed flow rows |
+| R9 | user selects number of displayed flow rows |
 
 ## 2. System Design
 

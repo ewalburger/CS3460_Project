@@ -9,7 +9,7 @@
 - [x] ReportConfiguration
 - [ ] SortStrategy
 - [x] ReportFormatter
-- [ ] FlowMonitor
+- [x] FlowMonitor
 
 After implementing the classes delete the old files? (or comment out code as we go)
 

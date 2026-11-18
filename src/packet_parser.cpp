@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <arpa/inet.h>
 
-std::optional<PacketInfo> PacketParser::parse(
+std::optional<Packet> PacketParser::parse(
     const std::uint8_t* bytes,
     std::size_t caplen,
     std::uint32_t wire_bytes) const {
@@ -56,7 +56,7 @@ std::optional<PacketInfo> PacketParser::parse(
         return std::nullopt;
     }
 
-    return PacketInfo{
+    return Packet{
         source_ip,
         destination_ip,
         src_port,

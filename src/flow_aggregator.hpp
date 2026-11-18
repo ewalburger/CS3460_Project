@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
+#include <utility>
 #include <vector>
 #include "packet_info.hpp"
 
@@ -19,8 +20,6 @@ struct FlowStats {
     std::uint64_t byte_count;
 };
 
-// std::map<FlowKey, FlowStats>;
-
 // Compare FlowKeys for ordering in std::map. This is a lexicographical comparison of the fields.
 inline bool operator<(const FlowKey& a, const FlowKey& b) {
     if (a.protocol != b.protocol) return a.protocol < b.protocol;
@@ -30,17 +29,28 @@ inline bool operator<(const FlowKey& a, const FlowKey& b) {
     return a.destination_port < b.destination_port;
 }
 
-struct FlowRow { 
-    FlowKey key; 
-    FlowStats stats; 
+class FlowRow {
+public:
+    FlowRow() = default;
+
+    FlowRow(FlowKey key, FlowStats stats = {})
+        : key(std::move(key)), stats(stats) {}
+
+    void recordPacket(std::uint32_t bytes) {
+        ++stats.packet_count;
+        stats.byte_count += bytes;
+    }
+
+    FlowKey key;
+    FlowStats stats{};
 };
-using FlowTable = std::map<FlowKey, FlowStats>;
+using FlowTable = std::map<FlowKey, FlowRow>;
 using FlowSnapshot = std::vector<FlowRow>; // Reporting copy.
 
 
 class FlowAggregator {
 public:
-    void update(const PacketInfo& packet);
+    void update(const Packet& packet);
     FlowSnapshot snapshot() const;
 private:
     FlowTable flows_; // Persists across reports.

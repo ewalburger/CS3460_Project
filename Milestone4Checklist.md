@@ -4,7 +4,7 @@
 - [x] PcapCapture
 - [x] PacketParser 
 - [x] Packet
-- [ ] FlowRow
+- [x] FlowRow
 - [ ] FlowAggregator 
 - [ ] ReportConfiguration
 - [ ] SortStrategy

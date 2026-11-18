@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
+#include <utility>
 #include <vector>
 #include "packet_info.hpp"
 
@@ -30,11 +31,22 @@ inline bool operator<(const FlowKey& a, const FlowKey& b) {
     return a.destination_port < b.destination_port;
 }
 
-struct FlowRow { 
-    FlowKey key; 
-    FlowStats stats; 
+class FlowRow {
+public:
+    FlowRow() = default;
+
+    FlowRow(FlowKey key, FlowStats stats = {})
+        : key(std::move(key)), stats(stats) {}
+
+    void recordPacket(std::uint32_t bytes) {
+        ++stats.packet_count;
+        stats.byte_count += bytes;
+    }
+
+    FlowKey key;
+    FlowStats stats{};
 };
-using FlowTable = std::map<FlowKey, FlowStats>;
+using FlowTable = std::map<FlowKey, FlowRow>;
 using FlowSnapshot = std::vector<FlowRow>; // Reporting copy.
 
 

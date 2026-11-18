@@ -20,30 +20,31 @@ bool capture_stop_requested() {
     return stop_requested != 0;
 }
 
-std::vector<std::string> get_and_display_interfaces() {
-    // use pcap_findalldevs() to list all available network interfaces
-    pcap_if_t *alldevs = nullptr;
-    char errbuf[PCAP_ERRBUF_SIZE]{};
+// MOVING THIS TO NETWORK_INTERFACE_MANAGER.CPP
+// std::vector<std::string> get_and_display_interfaces() {
+//     // use pcap_findalldevs() to list all available network interfaces
+//     pcap_if_t *alldevs = nullptr;
+//     char errbuf[PCAP_ERRBUF_SIZE]{};
 
-    if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-        throw std::runtime_error(std::string("Error finding devices: ") + errbuf);
-    }
+//     if (pcap_findalldevs(&alldevs, errbuf) == -1) {
+//         throw std::runtime_error(std::string("Error finding devices: ") + errbuf);
+//     }
 
-    std::vector<std::string> interfaces;
-    int index = 1;
+//     std::vector<std::string> interfaces;
+//     int index = 1;
 
-    std::cout << "Available Network Interfaces:\n";
-    for (pcap_if_t* dev = alldevs; dev != nullptr; dev = dev->next) {
-        std::string name = dev->name ? dev->name : "unknown";
-        std::string desc = dev->description ? dev->description : "No description";
+//     std::cout << "Available Network Interfaces:\n";
+//     for (pcap_if_t* dev = alldevs; dev != nullptr; dev = dev->next) {
+//         std::string name = dev->name ? dev->name : "unknown";
+//         std::string desc = dev->description ? dev->description : "No description";
 
-        std::cout << "  [" << index++ << "] " << name << " (" << desc << ")\n";
-        interfaces.push_back(name);
-    }
+//         std::cout << "  [" << index++ << "] " << name << " (" << desc << ")\n";
+//         interfaces.push_back(name);
+//     }
 
-    pcap_freealldevs(alldevs);
-    return interfaces;
-}
+//     pcap_freealldevs(alldevs);
+//     return interfaces;
+// }
 
 PcapHandle open_pcap_handle(const std::string& interface) { 
     // open the interface and verify the datalink

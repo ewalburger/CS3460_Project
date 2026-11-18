@@ -14,7 +14,7 @@
 int main()
 {
     try {
-        auto interfaces = get_and_display_interfaces();
+        auto interfaces = ;
 
         if (interfaces.empty()) {
             std::cerr << "No network interfaces found." << std::endl;

@@ -52,7 +52,8 @@ int main()
         // call open_pcap_handle with the chosen interface
         const auto selected_interface =
             interface_manager.selectInterface(interface_choice);
-        auto pcap_handle = open_pcap_handle(selected_interface);
+        PcapCapture capture;
+        capture.open(selected_interface);
 
         if (std::signal(SIGINT, handle_sigint) == SIG_ERR) {
             throw std::runtime_error("Unable to install SIGINT handler.");
@@ -75,7 +76,7 @@ int main()
 
         std::thread capture_thread([&] {
             try {
-                capture_loop(pcap_handle, packets);
+                capture.capturePackets(packets);
             } catch (...) {
                 capture_error = std::current_exception();
             }

@@ -14,14 +14,6 @@ void FlowAggregator::update(const PacketInfo& packet) {
         flows_[key] = FlowStats{1, packet.wire_bytes};
     }
 }
-// this one was generated 
-// FlowSnapshot FlowAggregator::snapshot() const {
-//     FlowSnapshot snapshot;
-//     for (const auto& entry : flows_) {
-//         snapshot.push_back(FlowRow{entry.first, entry.second});
-//     }
-//     return snapshot;
-// }
 
 FlowSnapshot FlowAggregator::snapshot() const {
     std::lock_guard<std::mutex> lock(mutex_);

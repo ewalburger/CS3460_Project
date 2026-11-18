@@ -1,12 +1,8 @@
-#include <pcap/pcap.h>
-#include <memory>
-#include <string>
-#include <stdexcept>
-#include <iostream>
 #include "pcap_capture.hpp"
-#include <optional>
-#include "packet_parser.hpp"
-#include "flow_aggregator.hpp"
+
+#include <pcap/pcap.h>
+#include <stdexcept>
+#include <utility>
 
 namespace {
 volatile std::sig_atomic_t stop_requested = 0;
@@ -16,75 +12,41 @@ void handle_sigint(int) {
     stop_requested = 1;
 }
 
-bool capture_stop_requested() {
-    return stop_requested != 0;
-}
-
-std::vector<std::string> get_and_display_interfaces() {
-    // use pcap_findalldevs() to list all available network interfaces
-    pcap_if_t *alldevs = nullptr;
+void PcapCapture::open(const std::string& interface_name) {
     char errbuf[PCAP_ERRBUF_SIZE]{};
-
-    if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-        throw std::runtime_error(std::string("Error finding devices: ") + errbuf);
+    pcap_t* raw = pcap_open_live(interface_name.c_str(), 65535, 0, 1000, errbuf);
+    if (!raw) {
+        throw std::runtime_error(std::string("pcap_open_live failed: ") + errbuf);
     }
 
-    std::vector<std::string> interfaces;
-    int index = 1;
-
-    std::cout << "Available Network Interfaces:\n";
-    for (pcap_if_t* dev = alldevs; dev != nullptr; dev = dev->next) {
-        std::string name = dev->name ? dev->name : "unknown";
-        std::string desc = dev->description ? dev->description : "No description";
-
-        std::cout << "  [" << index++ << "] " << name << " (" << desc << ")\n";
-        interfaces.push_back(name);
-    }
-
-    pcap_freealldevs(alldevs);
-    return interfaces;
-}
-
-PcapHandle open_pcap_handle(const std::string& interface) { 
-    // open the interface and verify the datalink
-
-    char errbuf[PCAP_ERRBUF_SIZE]{};
-    pcap_t* raw = pcap_open_live(interface.c_str(), 65535, 0, 1000, errbuf);
-    if (!raw) { throw std::runtime_error(std::string("pcap_open_live failed: ") + errbuf); }
-
-    using PcapHandle = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
     PcapHandle handle(raw, &pcap_close);
-
     if (pcap_datalink(handle.get()) != DLT_EN10MB) {
         throw std::runtime_error("this milestone supports Ethernet capture only");
     }
 
-    return handle; 
+    stop_requested = 0;
+    handle_ = std::move(handle);
 }
 
+void PcapCapture::capturePackets(PacketQueue& packets) {
+    if (!handle_) {
+        throw std::runtime_error("pcap capture is not open");
+    }
 
-
-
-void capture_loop(PcapHandle& handle, PacketQueue& packets) {
     char errbuf[PCAP_ERRBUF_SIZE]{};
-    if (pcap_setnonblock(handle.get(), 1, errbuf) != 0) {
+    if (pcap_setnonblock(handle_.get(), 1, errbuf) != 0) {
         throw std::runtime_error(errbuf);
     }
 
-    while (!capture_stop_requested()) {
+    while (stop_requested == 0) {
         struct pcap_pkthdr* header = nullptr;
         const u_char* bytes = nullptr;
 
-        int rc = pcap_next_ex(handle.get(), &header, &bytes);
+        int rc = pcap_next_ex(handle_.get(), &header, &bytes);
 
         if (rc == 1) {
-
-            std::size_t capturedLen = header->caplen;
-
-            std::size_t wireLen = header->len;
-            
-            // call parser
-            std::optional<PacketInfo> packet = parse_headers(bytes, capturedLen, wireLen);
+            std::optional<PacketInfo> packet =
+                parser_.parse(bytes, header->caplen, header->len);
 
             if (packet.has_value()) {
                 packets.push(std::move(*packet));
@@ -94,9 +56,12 @@ void capture_loop(PcapHandle& handle, PacketQueue& packets) {
             // timeout; continue
             continue;
         } else if (rc == -1) {
-            // capture error
-            throw std::runtime_error(std::string("pcap_next_ex failed: ") + pcap_geterr(handle.get()));
+            throw std::runtime_error(
+                std::string("pcap_next_ex failed: ") + pcap_geterr(handle_.get()));
         }
-
     }
+}
+
+void PcapCapture::stop() {
+    stop_requested = 1;
 }

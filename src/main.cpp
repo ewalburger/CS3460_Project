@@ -3,6 +3,7 @@
 #include "network_interface_manager.hpp"
 #include "reporter.hpp"
 #include "flow_aggregator.hpp"
+#include "report_configuration.hpp"
 #include <condition_variable>
 #include <exception>
 #include <mutex>
@@ -30,10 +31,6 @@ int main()
         std::cout << "\nEnter the interval in seconds for flow reporting: ";
         int interval = 0;
         std::cin >> interval;
-        if (interval < 1 || interval > 2) {
-            std::cerr << "Report interval must be 1 or 2 seconds." << std::endl;
-            return 1;
-        }
 
         std::cout << "\nEnter the number of flows to show in the report: ";
         int showing = 0;
@@ -48,6 +45,15 @@ int main()
             std::cerr << "Invalid sorting criteria. Please enter 'packets' or 'bytes': ";
             std::cin >> sortBy;
         }
+
+        const ReportConfiguration report_configuration(
+            interval,
+            showing,
+            sortBy == "packets" ? SortCriterion::PACKETS : SortCriterion::BYTES);
+        const std::string configured_sort_by =
+            report_configuration.sortCriterion() == SortCriterion::PACKETS
+                ? "packets"
+                : "bytes";
 
         // call open_pcap_handle with the chosen interface
         const auto selected_interface =
@@ -64,14 +70,19 @@ int main()
         std::exception_ptr capture_error;
         Reporter reporter;
         FlowAggregator aggregator;
-        const auto report_interval = std::chrono::seconds(interval);
+        const auto report_interval =
+            std::chrono::seconds(report_configuration.interval());
         std::mutex report_mutex;
         std::condition_variable report_condition;
         bool stop_reporting = false;
         const auto report_flow_table = [&] {
             const auto snapshot = aggregator.snapshot();
             std::cout << "\nFlow Summary:\n";
-            std::cout << reporter.summarize(snapshot, interval, showing, sortBy);
+            std::cout << reporter.summarize(
+                snapshot,
+                report_configuration.interval(),
+                report_configuration.numberToShow(),
+                configured_sort_by);
         };
 
         std::thread capture_thread([&] {

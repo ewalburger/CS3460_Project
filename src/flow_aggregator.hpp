@@ -20,8 +20,6 @@ struct FlowStats {
     std::uint64_t byte_count;
 };
 
-// std::map<FlowKey, FlowStats>;
-
 // Compare FlowKeys for ordering in std::map. This is a lexicographical comparison of the fields.
 inline bool operator<(const FlowKey& a, const FlowKey& b) {
     if (a.protocol != b.protocol) return a.protocol < b.protocol;

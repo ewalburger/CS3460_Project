@@ -5,8 +5,8 @@
 - [x] PacketParser 
 - [x] Packet
 - [x] FlowRow
-- [ ] FlowAggregator 
-- [ ] ReportConfiguration
+- [x] FlowAggregator 
+- [x] ReportConfiguration
 - [ ] SortStrategy
 - [ ] ReportFormatter
 - [ ] FlowMonitor

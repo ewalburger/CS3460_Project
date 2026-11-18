@@ -4,6 +4,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(PCAP REQUIRED IMPORTED_TARGET libpcap)
 add_executable(flow_monitor
     src/main.cpp
+    src/network_interface_manager.cpp
     src/pcap_capture.cpp
     src/packet_parser.cpp
     src/reporter.cpp

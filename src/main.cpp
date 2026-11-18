@@ -1,6 +1,6 @@
 #include <iostream>
-#include <pcap/pcap.h>
 #include "pcap_capture.hpp"
+#include "network_interface_manager.hpp"
 #include "reporter.hpp"
 #include "flow_aggregator.hpp"
 #include <condition_variable>
@@ -14,12 +14,14 @@
 int main()
 {
     try {
-        auto interfaces = ;
+        NetworkInterfaceManager interface_manager;
+        const auto interfaces = interface_manager.discoverInterfaces();
 
         if (interfaces.empty()) {
             std::cerr << "No network interfaces found." << std::endl;
             return 1;
         }
+        interface_manager.displayInterfaces();
         // user needs to choose an interface
         size_t interface_choice = 0;
         std::cout << "\nEnter the interface number you want to use: ";
@@ -48,19 +50,15 @@ int main()
         }
 
         // call open_pcap_handle with the chosen interface
-        if (interface_choice < 1 || interface_choice > interfaces.size()) {
-            std::cerr << "Invalid choice." << std::endl;
-            return 1;
-        }
-
-
-        auto pcap_handle = open_pcap_handle(interfaces[interface_choice - 1]);
+        const auto selected_interface =
+            interface_manager.selectInterface(interface_choice);
+        auto pcap_handle = open_pcap_handle(selected_interface);
 
         if (std::signal(SIGINT, handle_sigint) == SIG_ERR) {
             throw std::runtime_error("Unable to install SIGINT handler.");
         }
 
-        std::cout << "Opened interface: " << interfaces[interface_choice - 1] << std::endl;
+        std::cout << "Opened interface: " << selected_interface << std::endl;
         PacketQueue packets;
         std::exception_ptr capture_error;
         Reporter reporter;

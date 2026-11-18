@@ -1,6 +1,6 @@
 # Classes to implement
 
-- [ ] NetworkInterfaceManager 
+- [x] NetworkInterfaceManager 
 - [ ] PcapCapture
 - [ ] PacketParser 
 - [ ] Packet

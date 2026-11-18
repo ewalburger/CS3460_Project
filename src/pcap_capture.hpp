@@ -6,6 +6,7 @@
 
 #include "packet_info.hpp"
 #include "packet_queue.hpp"
+#include "packet_parser.hpp"
 #include <pcap/pcap.h>
 
 void handle_sigint(int signal);
@@ -19,4 +20,5 @@ public:
 private:
     using PcapHandle = std::unique_ptr<pcap_t, decltype(&pcap_close)>;
     PcapHandle handle_{nullptr, &pcap_close};
+    PacketParser parser_;
 };

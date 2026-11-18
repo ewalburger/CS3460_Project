@@ -1,8 +1,8 @@
 # Classes to implement
 
 - [x] NetworkInterfaceManager 
-- [ ] PcapCapture
-- [ ] PacketParser 
+- [x] PcapCapture
+- [x] PacketParser 
 - [ ] Packet
 - [ ] FlowRow
 - [ ] FlowAggregator 

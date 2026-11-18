@@ -1,17 +1,12 @@
-#include <optional>
 #include "packet_parser.hpp"
+
 #include <cstdint>
 #include <arpa/inet.h>
-#include <cstdio>
 
-std::optional<PacketInfo> parse_headers(
+std::optional<PacketInfo> PacketParser::parse(
     const std::uint8_t* bytes,
     std::size_t caplen,
-    std::uint32_t wire_bytes) {
-    // This function parses the Ethernet and IP headers from a packet.
-    // It returns std::nullopt if the packet is too short or invalid.
-    // Otherwise, it returns the transport layer offset.
-
+    std::uint32_t wire_bytes) const {
     constexpr std::size_t eth = 14;
     if (caplen < eth) return std::nullopt;
 

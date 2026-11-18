@@ -1,7 +1,7 @@
 #include <iostream>
 #include "pcap_capture.hpp"
 #include "network_interface_manager.hpp"
-#include "reporter.hpp"
+#include "report_formatter.hpp"
 #include "flow_aggregator.hpp"
 #include "report_configuration.hpp"
 #include <condition_variable>
@@ -50,11 +50,6 @@ int main()
             interval,
             showing,
             sortBy == "packets" ? SortCriterion::PACKETS : SortCriterion::BYTES);
-        const std::string configured_sort_by =
-            report_configuration.sortCriterion() == SortCriterion::PACKETS
-                ? "packets"
-                : "bytes";
-
         // call open_pcap_handle with the chosen interface
         const auto selected_interface =
             interface_manager.selectInterface(interface_choice);
@@ -68,7 +63,7 @@ int main()
         std::cout << "Opened interface: " << selected_interface << std::endl;
         PacketQueue packets;
         std::exception_ptr capture_error;
-        Reporter reporter;
+        ReportFormatter formatter;
         FlowAggregator aggregator;
         const auto report_interval =
             std::chrono::seconds(report_configuration.interval());
@@ -78,11 +73,7 @@ int main()
         const auto report_flow_table = [&] {
             const auto snapshot = aggregator.snapshot();
             std::cout << "\nFlow Summary:\n";
-            std::cout << reporter.summarize(
-                snapshot,
-                report_configuration.interval(),
-                report_configuration.numberToShow(),
-                configured_sort_by);
+            std::cout << formatter.format(snapshot, report_configuration);
         };
 
         std::thread capture_thread([&] {

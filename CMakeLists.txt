@@ -7,7 +7,7 @@ add_executable(flow_monitor
     src/network_interface_manager.cpp
     src/pcap_capture.cpp
     src/packet_parser.cpp
-    src/reporter.cpp
+    src/report_formatter.cpp
     src/flow_aggregator.cpp
     src/report_configuration.cpp
 )

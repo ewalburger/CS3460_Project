@@ -11,6 +11,7 @@ add_executable(flow_monitor
     src/flow_aggregator.cpp
     src/report_configuration.cpp
     src/flow_monitor.cpp
+    src/sort_strategy.cpp
 )
 target_compile_features(flow_monitor PRIVATE cxx_std_20)
 target_link_libraries(flow_monitor PRIVATE PkgConfig::PCAP)

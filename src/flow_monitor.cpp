@@ -6,6 +6,7 @@
 #include <exception>
 #include <iostream>
 #include <mutex>
+#include <memory>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -13,12 +14,18 @@
 FlowMonitor::FlowMonitor(
     std::string interface_name, ReportConfiguration configuration)
     : interface_name_(std::move(interface_name)),
-      configuration_(std::move(configuration)) {}
+      configuration_(std::move(configuration)) {
+    if (configuration_.sortCriterion() == SortCriterion::PACKETS) {
+        sort_strategy_ = std::make_unique<PacketCountSortStrategy>();
+    } else {
+        sort_strategy_ = std::make_unique<ByteCountSortStrategy>();
+    }
+}
 
 void FlowMonitor::reportFlows() const {
     const auto snapshot = aggregator_.snapshot();
     std::cout << "\nFlow Summary:\n";
-    std::cout << formatter_.format(snapshot, configuration_);
+    std::cout << formatter_.format(snapshot, configuration_, *sort_strategy_);
 }
 
 void FlowMonitor::run() {

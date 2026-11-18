@@ -7,15 +7,17 @@
 - [x] FlowRow
 - [x] FlowAggregator 
 - [x] ReportConfiguration
-- [ ] SortStrategy
+- [x] SortStrategy
 - [x] ReportFormatter
 - [x] FlowMonitor
 
 After implementing the classes delete the old files? (or comment out code as we go)
+- deleted old files as we created new ones
 
 # Implement required c++ features
 We have some required c++ features to implement. after we are done converting everything into classes, we need to check 
 if we have satisfied these requirements. 
 
+- need to add constructors and destructors
 
 # Implement tests 

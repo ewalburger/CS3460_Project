@@ -1,27 +1,10 @@
 #include "report_formatter.hpp"
-#include <algorithm>
 #include <iostream>
 
-FlowSnapshot ReportFormatter::sortByPackets(const FlowSnapshot snapshot) const {
-    FlowSnapshot sorted = snapshot;
-    std::sort(sorted.begin(), sorted.end(),
-        [](const FlowRow& a, const FlowRow& b) {
-            return a.stats.packet_count > b.stats.packet_count;
-        });
-    return sorted;
-}
-
-FlowSnapshot ReportFormatter::sortByBytes(const FlowSnapshot snapshot) const {
-    FlowSnapshot sorted = snapshot;
-    std::sort(sorted.begin(), sorted.end(),
-        [](const FlowRow& a, const FlowRow& b) {
-            return a.stats.byte_count > b.stats.byte_count;
-        });
-    return sorted;
-}
-
 std::string ReportFormatter::format(
-    const FlowSnapshot& snapshot, const ReportConfiguration& configuration) const {
+    const FlowSnapshot& snapshot,
+    const ReportConfiguration& configuration,
+    const SortStrategy& strategy) const {
     const std::string sort_name =
         configuration.sortCriterion() == SortCriterion::PACKETS ? "packets" : "bytes";
     std::string summary = "Interval: " + std::to_string(configuration.interval()) +
@@ -33,13 +16,7 @@ std::string ReportFormatter::format(
     if (!snapshot.empty()) {
 
     
-        FlowSnapshot sorted = snapshot;
-
-        if (configuration.sortCriterion() == SortCriterion::PACKETS) {
-            sorted = sortByPackets(snapshot);
-        } else {
-            sorted = sortByBytes(snapshot);
-        }
+        const FlowSnapshot sorted = strategy.sort(snapshot);
 
     
         for (size_t i = 0; i < static_cast<size_t>(configuration.numberToShow()) &&
@@ -62,6 +39,8 @@ std::string ReportFormatter::format(
 
 
 void ReportFormatter::report(
-    const FlowSnapshot& snapshot, const ReportConfiguration& configuration) const {
-     std::cout << format(snapshot, configuration) << std::endl;
+    const FlowSnapshot& snapshot,
+    const ReportConfiguration& configuration,
+    const SortStrategy& strategy) const {
+     std::cout << format(snapshot, configuration, strategy) << std::endl;
 }

@@ -2,16 +2,14 @@
 
 #include "flow_aggregator.hpp"
 #include "report_configuration.hpp"
+#include "sort_strategy.hpp"
 
 class ReportFormatter {
-
-private:
-    FlowSnapshot sortByPackets(const FlowSnapshot snapshot) const;
-    FlowSnapshot sortByBytes(const FlowSnapshot snapshot) const;
-
 public:
     void report(const FlowSnapshot& snapshot,
-                const ReportConfiguration& configuration) const;
+                const ReportConfiguration& configuration,
+                const SortStrategy& strategy) const;
     std::string format(const FlowSnapshot& snapshot,
-                       const ReportConfiguration& configuration) const;
+                       const ReportConfiguration& configuration,
+                       const SortStrategy& strategy) const;
 };

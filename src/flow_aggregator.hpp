@@ -40,7 +40,7 @@ using FlowSnapshot = std::vector<FlowRow>; // Reporting copy.
 
 class FlowAggregator {
 public:
-    void update(const PacketInfo& packet);
+    void update(const Packet& packet);
     FlowSnapshot snapshot() const;
 private:
     FlowTable flows_; // Persists across reports.

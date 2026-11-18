@@ -1,6 +1,6 @@
 #include "flow_aggregator.hpp"
 
-void FlowAggregator::update(const PacketInfo& packet) {
+void FlowAggregator::update(const Packet& packet) {
     std::lock_guard<std::mutex> lock(mutex_);
     FlowKey key{packet.protocol, packet.source_ip, packet.source_port,
                 packet.destination_ip, packet.destination_port};

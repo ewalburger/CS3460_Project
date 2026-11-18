@@ -10,7 +10,7 @@
 
 class PacketQueue {
 public:
-    void push(PacketInfo packet) {
+    void push(Packet packet) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
             if (closed_) {
@@ -21,7 +21,7 @@ public:
         available_.notify_one();
     }
 
-    std::optional<PacketInfo> pop() {
+    std::optional<Packet> pop() {
         std::unique_lock<std::mutex> lock(mutex_);
         available_.wait(lock, [this] {
             return closed_ || !packets_.empty();
@@ -31,7 +31,7 @@ public:
             return std::nullopt;
         }
 
-        PacketInfo packet = std::move(packets_.front());
+        Packet packet = std::move(packets_.front());
         packets_.pop();
         return packet;
     }
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    std::queue<PacketInfo> packets_;
+    std::queue<Packet> packets_;
     std::mutex mutex_;
     std::condition_variable available_;
     bool closed_ = false;

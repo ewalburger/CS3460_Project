@@ -7,7 +7,7 @@
 
 class PacketParser {
 public:
-    std::optional<PacketInfo> parse(
+    std::optional<Packet> parse(
         const std::uint8_t* bytes,
         std::size_t caplen,
         std::uint32_t wire_bytes) const;

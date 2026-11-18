@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include <utility>
 
+#include <optional>
+#include "packet_parser.hpp"
+
 namespace {
 volatile std::sig_atomic_t stop_requested = 0;
 }
@@ -45,7 +48,7 @@ void PcapCapture::capturePackets(PacketQueue& packets) {
         int rc = pcap_next_ex(handle_.get(), &header, &bytes);
 
         if (rc == 1) {
-            std::optional<PacketInfo> packet =
+            std::optional<Packet> packet =
                 parser_.parse(bytes, header->caplen, header->len);
 
             if (packet.has_value()) {

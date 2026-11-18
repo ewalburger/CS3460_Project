@@ -3,7 +3,7 @@
 - [x] NetworkInterfaceManager 
 - [x] PcapCapture
 - [x] PacketParser 
-- [ ] Packet
+- [x] Packet
 - [ ] FlowRow
 - [ ] FlowAggregator 
 - [ ] ReportConfiguration
@@ -13,4 +13,9 @@
 
 After implementing the classes delete the old files? (or comment out code as we go)
 
-# Implement tests after
+# Implement required c++ features
+We have some required c++ features to implement. after we are done converting everything into classes, we need to check 
+if we have satisfied these requirements. 
+
+
+# Implement tests 

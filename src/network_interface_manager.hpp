@@ -6,6 +6,9 @@
 
 class NetworkInterfaceManager {
 public:
+    NetworkInterfaceManager() = default;
+    ~NetworkInterfaceManager() = default;
+
     std::vector<std::string> discoverInterfaces();
     void displayInterfaces() const;
     std::string selectInterface(std::size_t selection) const;

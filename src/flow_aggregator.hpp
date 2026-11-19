@@ -32,6 +32,7 @@ inline bool operator<(const FlowKey& a, const FlowKey& b) {
 class FlowRow {
 public:
     FlowRow() = default;
+    ~FlowRow() = default;
 
     FlowRow(FlowKey key, FlowStats stats = {})
         : key(std::move(key)), stats(stats) {}
@@ -50,6 +51,9 @@ using FlowSnapshot = std::vector<FlowRow>; // Reporting copy.
 
 class FlowAggregator {
 public:
+    FlowAggregator() = default;
+    ~FlowAggregator() = default;
+
     void update(const Packet& packet);
     FlowSnapshot snapshot() const;
 private:

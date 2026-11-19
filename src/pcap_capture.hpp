@@ -13,6 +13,9 @@ void handle_sigint(int signal);
 
 class PcapCapture {
 public:
+    PcapCapture() = default;
+    ~PcapCapture() = default;
+
     void open(const std::string& interface_name);
     void capturePackets(PacketQueue& packets);
     void stop();

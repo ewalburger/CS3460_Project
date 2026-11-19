@@ -10,6 +10,9 @@
 
 class PacketQueue {
 public:
+    PacketQueue() = default;
+    ~PacketQueue() = default;
+
     void push(Packet packet) {
         {
             std::lock_guard<std::mutex> lock(mutex_);

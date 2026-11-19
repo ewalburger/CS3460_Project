@@ -6,6 +6,9 @@
 
 class ReportFormatter {
 public:
+    ReportFormatter() = default;
+    ~ReportFormatter() = default;
+
     void report(const FlowSnapshot& snapshot,
                 const ReportConfiguration& configuration,
                 const SortStrategy& strategy) const;

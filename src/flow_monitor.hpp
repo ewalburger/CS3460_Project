@@ -13,6 +13,7 @@
 class FlowMonitor {
 public:
     FlowMonitor(std::string interface_name, ReportConfiguration configuration);
+    ~FlowMonitor() = default;
 
     void run();
 

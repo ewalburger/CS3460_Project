@@ -7,6 +7,9 @@
 
 class PacketParser {
 public:
+    PacketParser() = default;
+    ~PacketParser() = default;
+
     std::optional<Packet> parse(
         const std::uint8_t* bytes,
         std::size_t caplen,

@@ -8,6 +8,7 @@ enum class SortCriterion {
 class ReportConfiguration {
 public:
     ReportConfiguration(int interval, int number_to_show, SortCriterion sort_criterion);
+    ~ReportConfiguration() = default;
 
     int interval() const;
     int numberToShow() const;

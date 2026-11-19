@@ -9,6 +9,7 @@ enum class TransportProtocol { TCP, UDP };
 class Packet {
 public:
     Packet() = default;
+    ~Packet() = default;
 
     Packet(std::string source_ip,
            std::string destination_ip,
